@@ -24,8 +24,8 @@ const COUNT=620,positions=new Float32Array(COUNT*3),sizes=new Float32Array(COUNT
 let seed=90421;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
 function seedParticles(){for(let i=0;i<COUNT;i++){// Dense center field, with a deliberately sparse population near the screen edges.
 const rx=(rand()*2-1),ry=(rand()*2-1);
-baseX[i]=Math.sign(rx)*Math.pow(Math.abs(rx),1.45);
-baseY[i]=Math.sign(ry)*Math.pow(Math.abs(ry),1.45);
+baseX[i]=Math.sign(rx)*Math.pow(Math.abs(rx),1.32);
+baseY[i]=Math.sign(ry)*Math.pow(Math.abs(ry),1.32);
 positions[i*3]=baseX[i]*innerWidth*.49;positions[i*3+1]=baseY[i]*innerHeight*.48;positions[i*3+2]=0;sizes[i]=.9+rand()*2.2;seeds[i]=rand();phases[i]=rand()*Math.PI*2;speedA[i]=.12+rand()*.7;speedB[i]=.1+rand()*.9;ampA[i]=8+rand()*34;ampB[i]=7+rand()*38;driftX[i]=(rand()*2-1)*.5;driftY[i]=(rand()*2-1)*.5;freqBias[i]=rand();response[i]=.3+rand()*.9}}
 seedParticles();
 const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));geometry.setAttribute('aSeed',new THREE.BufferAttribute(seeds,1));
@@ -33,52 +33,72 @@ const uniforms={uTime:{value:0},uBass:{value:0},uMid:{value:0},uHigh:{value:0},u
 const pointsMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms,vertexShader:`attribute float aSize;attribute float aSeed;uniform float uTime,uBass,uMid,uHigh,uEnergy,uSize;varying float vAlpha;varying float vSeed;void main(){vec3 p=position;float t=uTime;vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp(aSize*uSize*(1.+uHigh*.9+uBass*.3),1.,5.5);vAlpha=(.48+aSeed*.48)*(.72+uEnergy*.55);vSeed=aSeed;}`,fragmentShader:`precision highp float;uniform float uHigh,uEnergy;varying float vAlpha;varying float vSeed;void main(){vec2 q=gl_PointCoord-.5;float r=length(q);if(r>.5)discard;float core=1.-smoothstep(.18,.31,r);float rim=1.-smoothstep(.31,.49,r);vec3 c=mix(vec3(.52,.30,.91),vec3(.94,.90,1.),smoothstep(.12,.88,vSeed));gl_FragColor=vec4(c,(core*.95+rim*.18)*vAlpha);}`});
 const points=new THREE.Points(geometry,pointsMaterial);scene.add(points);
 let ac,analyser,freq,src,started=false,playing=false,counting=false,hasPlayed=false;
-const smooth={bass:0,mid:0,high:0,energy:0},bands={bass:0,mid:0,high:0,energy:0};let previousBass=0,previousEnergy=0,previousMid=0,previousHigh=0,transient=0,lastBeat=0,dynamicEnvelope=0,slowEnvelope=0,impactEnvelope=0,shapeClock=0;
+const smooth={bass:0,mid:0,high:0,energy:0},bands={bass:0,mid:0,high:0,energy:0};let previousBass=0,transient=0,lastBeat=0,dynamicEnvelope=0,slowEnvelope=0,previousEnergy=0,spectralFlux=0;
 function average(a,b){let sum=0;for(let i=a;i<b;i++)sum+=freq[i]||0;return sum/Math.max(1,b-a)/255}
-function updateAudio(now,dt){if(analyser&&freq&&playing){analyser.getByteFrequencyData(freq);bands.bass=average(1,15);bands.mid=average(15,110);bands.high=average(110,Math.min(360,freq.length));bands.energy=(bands.bass+bands.mid+bands.high)/3;
- for(const k of Object.keys(smooth)){const target=bands[k];const attack=k==='bass'?.78:.5,release=k==='bass'?.19:.13;smooth[k]+=(target-smooth[k])*(target>smooth[k]?attack:release)}
- const bassRise=bands.bass-previousBass,energyRise=bands.energy-previousEnergy,midRise=bands.mid-previousMid,highRise=bands.high-previousHigh;const onset=Math.max(0,bassRise)*2.8+Math.max(0,energyRise)*4.2+Math.max(0,midRise)*1.15+Math.max(0,highRise)*1.0;if(onset>.022&&now-lastBeat>95){transient=Math.min(1.8,transient+onset*5.0);impactEnvelope=Math.min(1.8,impactEnvelope+onset*7.0);lastBeat=now}previousBass=bands.bass;previousEnergy=bands.energy;previousMid=bands.mid;previousHigh=bands.high;
- }else if(!playing){/* Hold the visual state perfectly still while paused. */}
- transient*=Math.exp(-dt/240);impactEnvelope*=Math.exp(-dt/420);
- const instant=Math.min(1.8,smooth.energy*2.3+smooth.bass*1.6+smooth.mid*.55+smooth.high*.35+transient*1.15+impactEnvelope*.65);
- dynamicEnvelope+=(instant-dynamicEnvelope)*(instant>dynamicEnvelope?.48:.032);
- slowEnvelope+=(smooth.energy-slowEnvelope)*(smooth.energy>slowEnvelope?.035:.012);
- uniforms.uBass.value=smooth.bass;uniforms.uMid.value=smooth.mid;uniforms.uHigh.value=smooth.high;uniforms.uEnergy.value=smooth.energy;uniforms.uTime.value=now*.001;
+function updateAudio(now,dt){
+ if(analyser&&freq&&playing){
+  analyser.getByteFrequencyData(freq);
+  bands.bass=average(1,18);bands.mid=average(18,125);bands.high=average(125,Math.min(380,freq.length));
+  bands.energy=(bands.bass*.42+bands.mid*.34+bands.high*.24);
+  // Detect actual changes in the spectrum, not just the average loudness.
+  let flux=0;for(let i=2;i<Math.min(220,freq.length);i++){
+   const v=freq[i]/255;const old=previousSpectrum[i]||0;flux+=Math.max(0,v-old);
+   previousSpectrum[i]=v;
+  }
+  spectralFlux=Math.min(1,flux/28);
+  for(const k of Object.keys(smooth)){const target=bands[k];const attack=k==='bass'?.68:.42,release=k==='bass'?.16:.105;smooth[k]+=(target-smooth[k])*(target>smooth[k]?attack:release)}
+  const bassRise=Math.max(0,bands.bass-previousBass);
+  const energyRise=Math.max(0,bands.energy-previousEnergy);
+  const onset=bassRise*3.8+energyRise*2.2+spectralFlux*.95;
+  if(onset>.075&&now-lastBeat>135){transient=Math.min(1.35,transient+onset*1.65);lastBeat=now}
+  previousBass=bands.bass;previousEnergy=bands.energy;
+ }
+ transient*=Math.exp(-dt/420);
+ const instant=Math.min(1.6,smooth.energy*1.7+smooth.bass*1.25+transient*1.15+spectralFlux*.32);
+ dynamicEnvelope+=(instant-dynamicEnvelope)*(instant>dynamicEnvelope?.24:.035);
+ slowEnvelope+=(smooth.energy-slowEnvelope)*(smooth.energy>slowEnvelope?.028:.009);
+ uniforms.uBass.value=smooth.bass;uniforms.uMid.value=smooth.mid;uniforms.uHigh.value=smooth.high;uniforms.uEnergy.value=Math.min(1,smooth.energy+transient*.3);uniforms.uTime.value=now*.001;
 }
-function updateParticlePositions(t,dt){if(!playing)return;const dyn=dynamicEnvelope,slow=slowEnvelope;const dtScale=Math.min(2,dt/16.67);
- // Keep the morph clock steady: audio changes the motion, not the timing of the shape transition.
- shapeClock += dt/1000 * 0.22;
- const cycle=(shapeClock%24)/24;
- // Smoothly morph between a ring and a wave over several seconds; no abrupt shape switching.
- const waveMix=0.5-0.5*Math.cos(cycle*Math.PI*2);
- const shapeWeight=Math.max(.48,Math.min(.88,.76-dyn*.12-impactEnvelope*.08));
- const energyMotion=Math.min(1.6, smooth.bass*1.25+smooth.mid*.55+smooth.high*.35+transient*.35);
+const previousSpectrum=new Float32Array(512);
+function updateParticlePositions(t,dt){if(!playing)return;const dyn=Math.min(1.5,dynamicEnvelope),slow=slowEnvelope;const dtScale=Math.min(2,dt/16.67);
+ // Forms emerge and dissolve slowly, while the entire field keeps travelling across the canvas.
+ const cycle=(t%26)/26;
+ const ringWeight=Math.max(0,1-Math.abs(cycle-.27)/.22);
+ const waveWeight=Math.max(0,1-Math.abs(cycle-.70)/.23);
+ // Audio accents briefly loosen the formation; quiet passages let it become legible again.
+ const formBase=Math.max(ringWeight,waveWeight)*(.48+Math.min(.22,slow*.7));
+ const shapeWeight=formBase*(1-Math.min(.68,dyn*.46));
  for(let i=0;i<COUNT;i++){
-  const a=phases[i],s=seeds[i],responseMix=response[i];
-  const individualT=t*speedA[i]+a;
-  const dynamicT=t*(.12+speedB[i]*.22)+a*1.7;
-  const localAmp=ampA[i]*(.10+slow*.45)+energyMotion*ampB[i]*(.7+responseMix*1.3)+impactEnvelope*ampB[i]*.55;
-  const freeX=baseX[i]*innerWidth*.49+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*(.12+energyMotion*.45);
-  const freeY=baseY[i]*innerHeight*.48+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.3+energyMotion*ampB[i]*(.65+responseMix)) +Math.sin(dynamicT+a*.4)*ampA[i]*.24;
-  const angle=(i/COUNT)*Math.PI*2 + a*.018;
-  const ringRadius=Math.min(innerWidth,innerHeight)*(.16+.12*seeds[i]);
-  const pulse=1 + smooth.bass*.10 + impactEnvelope*.12;
-  const ringX=Math.cos(angle+shapeClock*.055)*ringRadius*pulse;
-  const ringY=Math.sin(angle+shapeClock*.055)*ringRadius*.78*pulse;
-  const waveX=((i/(COUNT-1))-.5)*innerWidth*.82;
-  const waveY=Math.sin(waveX*.010+shapeClock*.34+a*.025)*innerHeight*.12 + Math.sin(waveX*.019-shapeClock*.21+a*.06)*innerHeight*.035;
-  const shapeX=ringX*(1-waveMix)+waveX*waveMix;
-  const shapeY=ringY*(1-waveMix)+waveY*waveMix;
+  const a=phases[i],s=seeds[i],r=response[i];
+  const w1=t*(.10+speedA[i]*.18)+a;
+  const w2=t*(.08+speedB[i]*.13)+a*2.31;
+  const wanderX=Math.sin(w1)*innerWidth*(.12+.11*s)+Math.sin(w2*.71+a)*innerWidth*.045;
+  const wanderY=Math.cos(w2)*innerHeight*(.12+.10*s)+Math.sin(w1*.63+a*1.7)*innerHeight*.055;
+  const audioMotion=(ampA[i]+ampB[i]*.8)*(0.12+dyn*1.7)*r;
+  const freeX=baseX[i]*innerWidth*.44+wanderX+Math.sin(t*(.55+speedB[i])+a*1.3)*audioMotion;
+  const freeY=baseY[i]*innerHeight*.43+wanderY+Math.cos(t*(.48+speedA[i])+a*.8)*audioMotion*.72;
+  const angle=(i/COUNT)*Math.PI*2+a*.13;
+  const radius=Math.min(innerWidth,innerHeight)*(.18+.13*s);
+  const ringX=Math.cos(angle+t*.045)*radius+Math.sin(t*.24+a)*innerWidth*.018;
+  const ringY=Math.sin(angle+t*.045)*radius*.82+Math.cos(t*.21+a*1.7)*innerHeight*.018;
+  const waveX=((i/COUNT)-.5)*innerWidth*.78;
+  const waveY=Math.sin(waveX*.009+t*.48+a*.18)*innerHeight*.17+Math.sin(waveX*.018-t*.27+a)*innerHeight*.045;
+  const shapeX=ringWeight>=waveWeight?ringX:waveX;
+  const shapeY=ringWeight>=waveWeight?ringY:waveY;
   const targetX=freeX*(1-shapeWeight)+shapeX*shapeWeight;
   const targetY=freeY*(1-shapeWeight)+shapeY*shapeWeight;
   const idx=i*3;
-  const blend=1-Math.exp(-dt*(.48+responseMix*.35+shapeWeight*.35+energyMotion*.65+impactEnvelope*.8)/1000);
-  positions[idx]+=(targetX-positions[idx])*blend;
-  positions[idx+1]+=(targetY-positions[idx+1])*blend;
-  const kick=impactEnvelope*(.10+responseMix*.18)*dtScale;
-  positions[idx]+=Math.cos(a+angle)*kick;
-  positions[idx+1]+=Math.sin(a+angle)*kick;
-  const halfW=innerWidth*.51,halfH=innerHeight*.51;
+  // Audio attacks add a brief, individual kick without producing a repeated metronomic twitch.
+  const kick=(transient*.9+dyn*.18)*r;
+  const vx=Math.sin(t*(.7+speedB[i])+a*3.7)*kick*ampB[i]*.16;
+  const vy=Math.cos(t*(.62+speedA[i])+a*2.9)*kick*ampA[i]*.16;
+  const blend=1-Math.exp(-dt*(.65+r*.85+shapeWeight*.55)/1000);
+  positions[idx]+=(targetX+vx-positions[idx])*blend;
+  positions[idx+1]+=(targetY+vy-positions[idx+1])*blend;
+  // Keep a sparse trickle crossing the outer margins; never pin the whole field to the center.
+  positions[idx]+=driftX[i]*(.25+dyn*.7)*dtScale;
+  positions[idx+1]+=driftY[i]*(.22+dyn*.75)*dtScale;
+  const halfW=innerWidth*.515,halfH=innerHeight*.515;
   if(positions[idx]>halfW)positions[idx]=-halfW;if(positions[idx]<-halfW)positions[idx]=halfW;
   if(positions[idx+1]>halfH)positions[idx+1]=-halfH;if(positions[idx+1]<-halfH)positions[idx+1]=halfH;
  }
