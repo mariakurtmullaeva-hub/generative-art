@@ -1,80 +1,67 @@
 <!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#05030a">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#05020b">
 <title>Liminal Bloom — Max Vue · Psychedelic Transform</title>
 <style>
-:root{color-scheme:dark;--ink:#f1edf8;--muted:#aaa2b9}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#05030a;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-#scene{position:fixed;inset:0;width:100%;height:100%;display:block}
-.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,transparent 17%,rgba(5,3,10,.18) 58%,rgba(5,3,10,.88) 100%)}
-.top{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);top:clamp(20px,4vh,40px);display:flex;align-items:flex-start;justify-content:space-between;gap:20px;pointer-events:none}
-.eyebrow{font-size:9px;letter-spacing:.28em;color:#b7a6d2}.title{font-size:clamp(20px,2.4vw,30px);font-weight:300;letter-spacing:.04em;margin-top:9px}.sub{font-size:11px;color:#a29aae;margin-top:6px;letter-spacing:.08em}
-.pill{border:1px solid #ffffff28;border-radius:99px;padding:9px 12px;color:#d4cbe1;background:#ffffff08;font-size:10px;letter-spacing:.12em}
-.center-note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .45s;width:100%}
-.center-note .tiny{font-size:9px;letter-spacing:.28em;color:#e3d9f2;text-shadow:0 0 22px #b8a0ff}
-.center-note .hint{font-size:11px;color:#b5a9c7;margin-top:12px;letter-spacing:.08em}
-#countdown{font-size:clamp(64px,14vw,150px);font-weight:200;letter-spacing:-.06em;color:#f6f1ff;text-shadow:0 0 50px #a58bd9;line-height:1;opacity:0;transform:scale(.8);transition:opacity .22s,transform .22s}
-#countdown.show{opacity:1;transform:scale(1)}
-.bottom{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);bottom:clamp(20px,4vh,38px);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}
-.track-name{font-size:12px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-sub{font-size:10px;color:#a29aae;margin-top:5px;letter-spacing:.1em}
-.controls{display:flex;align-items:center;gap:9px}.btn{appearance:none;border:1px solid #ffffff30;background:#ffffff0b;color:#f5efff;border-radius:99px;padding:12px 16px;font:inherit;font-size:11px;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(14px);transition:background .2s,border-color .2s}.btn:hover{background:#ffffff18;border-color:#ffffff65}.btn.primary{background:#eee6fa;color:#171020;border-color:#eee6fa}
+:root{color-scheme:dark;--ink:#f5efff;--muted:#b5a8c8}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03020a;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block}.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 25%,rgba(2,1,8,.2) 70%,rgba(2,1,8,.68) 100%)}
+.top{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);top:clamp(20px,4vh,40px);display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}.eyebrow{font-size:9px;letter-spacing:.28em;color:#c0a6e8}.title{font-size:clamp(20px,2.4vw,30px);font-weight:300;letter-spacing:.04em;margin-top:9px}.sub{font-size:11px;color:#a79bbd;margin-top:6px;letter-spacing:.08em}.pill{border:1px solid #ffffff28;border-radius:99px;padding:9px 12px;color:#d4cbe1;background:#ffffff08;font-size:10px;letter-spacing:.12em}
+.center-note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .45s;width:100%}.center-note .tiny{font-size:9px;letter-spacing:.28em;color:#f0e6ff;text-shadow:0 0 22px #d4aaff}.center-note .hint{font-size:11px;color:#b9a9cc;margin-top:12px;letter-spacing:.08em}
+#countdown{font-size:clamp(64px,14vw,150px);font-weight:200;letter-spacing:-.06em;color:#fff7ff;text-shadow:0 0 50px #c99aff;line-height:1;opacity:0;transform:scale(.8);transition:opacity .22s,transform .22s}#countdown.show{opacity:1;transform:scale(1)}
+.bottom{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);bottom:clamp(20px,4vh,38px);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}.track-name{font-size:12px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-sub{font-size:10px;color:#a79bbd;margin-top:5px;letter-spacing:.1em}.controls{display:flex;align-items:center;gap:9px}.btn{appearance:none;border:1px solid #ffffff30;background:#ffffff0b;color:#f5efff;border-radius:99px;padding:12px 16px;font:inherit;font-size:11px;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(14px)}.btn:hover{background:#ffffff18;border-color:#ffffff65}.btn.primary{background:#eee6fa;color:#171020;border-color:#eee6fa}
 #seek{position:fixed;bottom:0;left:0;width:100%;height:2px;appearance:none;background:#ffffff18;outline:none;cursor:pointer}#seek::-webkit-slider-thumb{appearance:none;width:5px;height:5px;border-radius:50%;background:#eee4ff}
 @media(max-width:600px){.bottom{grid-template-columns:1fr;gap:12px}.controls{justify-content:flex-start}.btn{padding:11px 13px}.pill{font-size:8px}}
 </style></head><body>
 <canvas id="scene"></canvas><div class="vignette"></div>
-<header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · ONE LIVING FORM</div></div><div class="pill" id="state">DORMANT / 01</div></header>
-<div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A LIVING ORGANISM</div><div class="hint" id="hint">Press enter to begin</div></div>
+<header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · MANY FLUID FORMS</div></div><div class="pill" id="state">DORMANT / 01</div></header>
+<div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A FLUID WORLD</div><div class="hint" id="hint">Press enter to begin</div></div>
 <footer class="bottom"><div><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
-<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="auto"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
-const scene=new THREE.Scene();scene.background=new THREE.Color('#05030a');
-const camera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#03020a');const camera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
 const uniforms={uTime:{value:0},uRes:{value:new THREE.Vector2(innerWidth,innerHeight)},uBass:{value:0},uMid:{value:0},uHigh:{value:0},uEnergy:{value:0},uPlay:{value:0}};
 const material=new THREE.ShaderMaterial({uniforms,vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.0);}`,fragmentShader:`
 precision highp float;varying vec2 vUv;uniform vec2 uRes;uniform float uTime,uBass,uMid,uHigh,uEnergy,uPlay;
-#define PI 3.14159265359
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
 float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.02+vec2(7.1,3.7);a*=.5;}return v;}
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
 void main(){
- vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;float t=uTime*.13;
- float r=length(uv),ang=atan(uv.y,uv.x);
- // Fluid advection: layered domain warping gives a continuous liquid field, not point sprites.
- vec2 p=uv*1.45;float n=fbm(p*2.1+vec2(t*.22,-t*.17));
- for(int i=0;i<6;i++){float fi=float(i);p=rot(.16*sin(t+fi*.65)+.11*cos(t*.6-fi))*p;p+=.115*vec2(sin(p.y*3.0+t+fi),cos(p.x*3.15-t*.75+fi))*(.8+uMid*1.25);}
- float f1=fbm(p*2.7+vec2(t*.12,-t*.09)),f2=fbm(p*5.2-vec2(t*.18,t*.11));
- float flow=(f1-.5)*(.17+uMid*.07)+(f2-.5)*(.055+uHigh*.025);
- float petal=sin(ang*4.5+t*.65+sin(ang*2.-t)*.65);
- float radius=.305+uBass*.10+flow+.044*petal+.014*sin(ang*9.-t);
- float d=abs(r-radius),innerD=abs(r-(.17+.022*sin(ang*5.+t)+uBass*.035+flow*.3));
- float membrane=exp(-d*(95.+uHigh*24.)),inner=exp(-innerD*82.);
- float tendrils=0.;
- for(int i=0;i<8;i++){float fi=float(i);float cr=.10+.038*fi+.025*sin(ang*(3.+mod(fi,4.))+t*(.6+fi*.025)+fi)+flow*.65;tendrils+=exp(-abs(r-cr)*110.)*(.25+.75*f1);}
- float veins=pow(max(0.,sin(ang*16.+f2*8.+t*1.1+sin(r*14.-t))),10.)*exp(-r*1.25);
- // Flowing caustics, blurred into the membrane
- float caustic=pow(max(0.,sin((f1*1.7+f2)*10.-r*14.+t)),5.)*exp(-d*10.);
- float core=exp(-r*4.8)*(.22+.22*sin(t*1.4+r*10.)+uBass*.4);
- float halo=exp(-abs(r-(.50+flow*.4))*14.)*(.18+uBass*.35);
- vec3 col=vec3(.004,.003,.009);
- col+=vec3(.075,.045,.13)*exp(-r*1.5)*(.35+f1*.65);
- // violet ink, lavender membranes, silver-white highlights
- col+=vec3(.20,.075,.42)*halo;
- col+=vec3(.27,.13,.52)*membrane*(.42+uHigh*.45);
- col+=vec3(.56,.42,.78)*tendrils*(.20+uHigh*.65);
- col+=vec3(.83,.79,.91)*veins*(.08+uMid*.42);
- col+=vec3(.68,.64,.82)*caustic*(.10+uMid*.35);
- col+=vec3(.72,.68,.87)*inner*(.08+uMid*.22);
- col+=vec3(.86,.83,.96)*core;
- // Subtle continuous mist, rather than square particles
- float mist=fbm(uv*8.+vec2(t*.15,-t*.11));
- col+=vec3(.16,.10,.24)*mist*exp(-r*1.8)*.14;
- float vign=1.-smoothstep(.38,1.02,length(uv));col*=vign;
+ vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;float t=uTime*.16;
+ // Multiple independent fluid bodies distributed across the whole frame.
+ vec2 p=uv;float warpA=fbm(p*2.0+vec2(t*.2,-t*.13));
+ for(int i=0;i<5;i++){float fi=float(i);p=rot(.14*sin(t*.8+fi)+.08*cos(t*.5-fi))*p;p+=.10*vec2(sin(p.y*3.4+t+fi),cos(p.x*3.1-t*.7+fi))*(.7+uMid*1.4);}
+ float field=fbm(p*3.2+vec2(t*.11,-t*.08));
+ float fine=fbm(p*6.0-vec2(t*.13,t*.09));
+ // Smooth organic contours are built from warped distance fields, not a central ring.
+ float f=field-.49 + .055*sin(p.x*3.5+t+fine*3.) + .04*cos(p.y*4.0-t*.8+field*5.);
+ float band1=exp(-abs(f)*16.0);
+ float band2=exp(-abs(f-.095-.025*sin(t+field*4.)-uBass*.025)*24.0);
+ float band3=exp(-abs(f+.12+.035*cos(t*.8+fine*5.)-uMid*.025)*30.0);
+ float ridges=pow(max(0.,sin((field*1.4+fine*.7)*19.+t*.9)),5.)*exp(-abs(f)*5.);
+ float liquidLight=fbm(p*4.2+vec2(-t*.17,t*.12));
+ float spec=pow(max(0.,sin((field+fine*.35)*25.-t+uHigh*.4)),12.)*band1;
+ // Slow advected folds and broad soft gradients fill the entire canvas.
+ vec3 col=vec3(.006,.003,.014);
+ float atmosphere=fbm(uv*2.5+vec2(t*.08,-t*.06));
+ col+=vec3(.075,.025,.14)*atmosphere*.52;
+ col+=vec3(.16,.035,.36)*band1*(.55+liquidLight*.55+uBass*.4);
+ col+=vec3(.31,.10,.64)*band2*(.40+uMid*.5);
+ col+=vec3(.48,.29,.75)*band3*(.22+uHigh*.5);
+ col+=vec3(.70,.56,.83)*ridges*(.10+uMid*.38);
+ col+=vec3(.95,.88,1.)*spec*(.10+uHigh*.7);
+ // broad flowing pigment ribbons: stretched and displaced by the fluid field
+ float ribbonA=exp(-abs(sin(p.x*2.0+p.y*1.1+t*.45+field*3.0))*(5.0+fine*3.0));
+ float ribbonB=exp(-abs(sin(p.y*2.4-p.x*.8-t*.32+fine*4.0))*(6.0+field*2.0));
+ col+=vec3(.17,.045,.33)*ribbonA*.32;
+ col+=vec3(.36,.15,.51)*ribbonB*.24;
+ // audio gently changes fluid advection and specular intensity
+ col*=.93+uEnergy*.38;
+ float vign=1.-smoothstep(.58,1.28,length(uv));col*=vign;
  col=pow(max(col,vec3(0.)),vec3(.88));gl_FragColor=vec4(col,1.);
 }`});
 scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),material));
@@ -91,28 +78,10 @@ audio.addEventListener('timeupdate',()=>{if(!seek.matches(':active'))seek.value=
 audio.addEventListener('error',()=>{state.textContent='TRACK ERROR';hint.textContent='Could not load track.mp3 — check file path'});
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
 async function setupAudio(){if(!started){ac=new AudioContext();analyser=ac.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=.88;src=ac.createMediaElementSource(audio);src.connect(analyser);analyser.connect(ac.destination);freq=new Uint8Array(analyser.frequencyBinCount);started=true}if(ac.state==='suspended')await ac.resume();if(audio.error)throw new Error('Audio file error '+audio.error.code)}
-async function startFirstTime(){
- if(counting)return;counting=true;
- try{await setupAudio();note.style.opacity=1;document.querySelector('#note-title').textContent='PREPARE TO ENTER';hint.textContent='Take a breath';
- // Start the media silently inside the user gesture so autoplay policy permits the countdown.
- audio.volume=0;await audio.play();
- for(let n=3;n>=1;n--){count.textContent=n;count.classList.add('show');await sleep(760);count.classList.remove('show');await sleep(220)}
- count.textContent='';audio.currentTime=0;audio.volume=1;playing=true;hasPlayed=true;uniforms.uPlay.value=1;state.textContent='AWAKENING / 02';note.style.opacity=0;play.innerHTML='Ⅱ &nbsp; PAUSE';
- }catch(e){console.error('Audio startup failed',e,audio.error);state.textContent='AUDIO ERROR';note.style.opacity=1;document.querySelector('#note-title').textContent='AUDIO UNAVAILABLE';hint.textContent=(e.name||'Error')+': '+(e.message||'could not start playback')}finally{counting=false}
-}
-play.addEventListener('click',async()=>{
- if(counting)return;
- if(playing){audio.pause();playing=false;play.innerHTML='▶ &nbsp; RESUME';state.textContent='SUSPENDED / 02';note.style.opacity=1;count.classList.remove('show');count.textContent='';document.querySelector('#note-title').textContent='A LIVING ORGANISM';hint.textContent='Paused — resume when ready';return}
- if(hasPlayed&&!audio.ended){
-  try{await setupAudio();await audio.play();playing=true;uniforms.uPlay.value=1;state.textContent='AWAKENING / 02';note.style.opacity=0;play.innerHTML='Ⅱ &nbsp; PAUSE'}
-  catch(e){state.textContent='AUDIO ERROR';hint.textContent=(e.name||'Error')+': '+(e.message||'could not resume')}
-  return;
- }
- if(audio.ended)audio.currentTime=0;
- await startFirstTime();
-});
-audio.addEventListener('ended',()=>{playing=false;hasPlayed=false;play.innerHTML='↺ &nbsp; REPLAY';state.textContent='RESTING / 03';note.style.opacity=1;document.querySelector('#note-title').textContent='THE BLOOM RESTS';hint.textContent='Press replay when you are ready';uniforms.uPlay.value=0});
-document.querySelector('#restart').addEventListener('click',()=>{if(counting)return;audio.pause();audio.currentTime=0;audio.volume=1;playing=false;hasPlayed=false;play.innerHTML='▶ &nbsp; ENTER';state.textContent='DORMANT / 01';note.style.opacity=1;count.classList.remove('show');count.textContent='';document.querySelector('#note-title').textContent='A LIVING ORGANISM';hint.textContent='Press enter to begin';uniforms.uPlay.value=0});
+async function startFirstTime(){if(counting)return;counting=true;try{await setupAudio();note.style.opacity=1;document.querySelector('#note-title').textContent='ENTER THE FLUID';hint.textContent='Take a breath';audio.volume=0;await audio.play();for(let n=3;n>=1;n--){count.textContent=n;count.classList.add('show');await sleep(760);count.classList.remove('show');await sleep(220)}count.textContent='';audio.currentTime=0;audio.volume=1;playing=true;hasPlayed=true;uniforms.uPlay.value=1;state.textContent='IN MOTION / 02';note.style.opacity=0;play.innerHTML='Ⅱ &nbsp; PAUSE'}catch(e){console.error(e);state.textContent='AUDIO ERROR';note.style.opacity=1;document.querySelector('#note-title').textContent='AUDIO UNAVAILABLE';hint.textContent=(e.name||'Error')+': '+(e.message||'could not start playback')}finally{counting=false}}
+play.addEventListener('click',async()=>{if(counting)return;if(playing){audio.pause();playing=false;play.innerHTML='▶ &nbsp; RESUME';state.textContent='SUSPENDED / 02';note.style.opacity=1;count.classList.remove('show');count.textContent='';document.querySelector('#note-title').textContent='FLUID AT REST';hint.textContent='Paused — resume when ready';return}if(hasPlayed&&!audio.ended){try{await setupAudio();await audio.play();playing=true;uniforms.uPlay.value=1;state.textContent='IN MOTION / 02';note.style.opacity=0;play.innerHTML='Ⅱ &nbsp; PAUSE'}catch(e){state.textContent='AUDIO ERROR';hint.textContent=(e.name||'Error')+': '+(e.message||'could not resume')}return}if(audio.ended)audio.currentTime=0;await startFirstTime()});
+audio.addEventListener('ended',()=>{playing=false;hasPlayed=false;play.innerHTML='↺ &nbsp; REPLAY';state.textContent='RESTING / 03';note.style.opacity=1;document.querySelector('#note-title').textContent='THE FLUID SETTLES';hint.textContent='Press replay when you are ready';uniforms.uPlay.value=0});
+document.querySelector('#restart').addEventListener('click',()=>{if(counting)return;audio.pause();audio.currentTime=0;audio.volume=1;playing=false;hasPlayed=false;play.innerHTML='▶ &nbsp; ENTER';state.textContent='DORMANT / 01';note.style.opacity=1;count.classList.remove('show');count.textContent='';document.querySelector('#note-title').textContent='A FLUID WORLD';hint.textContent='Press enter to begin';uniforms.uPlay.value=0});
 seek.addEventListener('input',()=>{audio.currentTime=Number(seek.value)});
 document.querySelector('#fullscreen').addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}});
 </script></body></html>
