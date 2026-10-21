@@ -37,7 +37,7 @@
   <div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div>
 </footer>
 <input id="seek" type="range" min="0" max="205" value="0" step=".1" aria-label="Track position">
-<audio id="audio" src="./audio/track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
