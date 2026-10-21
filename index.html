@@ -18,7 +18,7 @@
 <header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · A FIELD OF DUST</div></div><div class="pill" id="state">DORMANT / 01</div></header>
 <div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A FIELD OF DUST</div><div class="hint" id="hint">Press enter to begin</div></div>
 <footer class="bottom"><div><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
-<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="auto"></audio>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
