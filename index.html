@@ -2,86 +2,77 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#03020a">
 <title>Liminal Bloom — Max Vue · Psychedelic Transform</title>
 <style>
-:root{color-scheme:dark;--ink:#f5efff}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03020a;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-#scene{position:fixed;inset:0;width:100%;height:100%;display:block}
-.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(3,2,10,.10) 0%,rgba(3,2,10,.02) 55%,rgba(3,2,10,.38) 100%);transition:background .35s ease}
-body.text-mode .vignette{background:radial-gradient(ellipse at center,rgba(3,2,10,.98) 0%,rgba(3,2,10,.94) 25%,rgba(3,2,10,.45) 47%,rgba(3,2,10,.12) 75%,rgba(3,2,10,.5) 100%)}
+:root{color-scheme:dark;--ink:#f5efff}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03020a;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block}.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,rgba(3,2,10,.08),rgba(3,2,10,.02) 55%,rgba(3,2,10,.38) 100%);transition:background .35s ease}body.text-mode .vignette{background:radial-gradient(ellipse at center,rgba(3,2,10,.98) 0%,rgba(3,2,10,.94) 25%,rgba(3,2,10,.45) 47%,rgba(3,2,10,.12) 75%,rgba(3,2,10,.5) 100%)}
 .top{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);top:clamp(20px,4vh,40px);display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}.eyebrow{font-size:9px;letter-spacing:.28em;color:#d0b8ff}.title{font-size:clamp(20px,2.4vw,30px);font-weight:300;letter-spacing:.04em;margin-top:9px}.sub{font-size:11px;color:#b8accd;margin-top:6px;letter-spacing:.08em}.pill{border:1px solid #ffffff35;border-radius:99px;padding:9px 12px;color:#eee6ff;background:#080612;font-size:10px;letter-spacing:.12em}
-.center-note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .35s;width:100%;padding:28px 0;background:radial-gradient(ellipse at center,rgba(3,2,10,.95),rgba(3,2,10,.74) 38%,rgba(3,2,10,0) 72%)}
-.center-note .tiny{font-size:9px;letter-spacing:.28em;color:#f0e6ff;text-shadow:0 0 22px #d4aaff}.center-note .hint{font-size:11px;color:#c4b8d7;margin-top:12px;letter-spacing:.08em}
+.center-note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .35s;width:100%;padding:28px 0;background:radial-gradient(ellipse at center,rgba(3,2,10,.95),rgba(3,2,10,.74) 38%,rgba(3,2,10,0) 72%)}.center-note .tiny{font-size:9px;letter-spacing:.28em;color:#f0e6ff;text-shadow:0 0 22px #d4aaff}.center-note .hint{font-size:11px;color:#c4b8d7;margin-top:12px;letter-spacing:.08em}
 #countdown{font-size:clamp(64px,14vw,150px);font-weight:200;letter-spacing:-.06em;color:#fff7ff;text-shadow:0 0 35px #c99aff;line-height:1;opacity:0;transform:scale(.8);transition:opacity .22s,transform .22s}#countdown.show{opacity:1;transform:scale(1)}
 .bottom{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);bottom:clamp(20px,4vh,38px);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}.track-name{font-size:12px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-sub{font-size:10px;color:#b8accd;margin-top:5px;letter-spacing:.1em}.controls{display:flex;align-items:center;gap:9px}.btn{appearance:none;border:1px solid #ffffff35;background:#080612;color:#f5efff;border-radius:99px;padding:12px 16px;font:inherit;font-size:11px;letter-spacing:.08em;cursor:pointer}.btn:hover{background:#211632;border-color:#ffffff75}.btn.primary{background:#eee6fa;color:#171020;border-color:#eee6fa}
-#seek{position:fixed;bottom:0;left:0;width:100%;height:2px;appearance:none;background:#ffffff25;outline:none;cursor:pointer}#seek::-webkit-slider-thumb{appearance:none;width:6px;height:6px;border-radius:50%;background:#eee4ff}
-@media(max-width:600px){.bottom{grid-template-columns:1fr;gap:12px}.controls{justify-content:flex-start}.btn{padding:11px 13px}.pill{font-size:8px}}
+#seek{position:fixed;bottom:0;left:0;width:100%;height:2px;appearance:none;background:#ffffff25;outline:none;cursor:pointer}#seek::-webkit-slider-thumb{appearance:none;width:6px;height:6px;border-radius:50%;background:#eee4ff}@media(max-width:600px){.bottom{grid-template-columns:1fr;gap:12px}.controls{justify-content:flex-start}.btn{padding:11px 13px}.pill{font-size:8px}}
 </style></head><body class="text-mode">
 <canvas id="scene"></canvas><div class="vignette"></div>
 <header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · A FIELD OF DUST</div></div><div class="pill" id="state">DORMANT / 01</div></header>
 <div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A FIELD OF DUST</div><div class="hint" id="hint">Press enter to begin</div></div>
 <footer class="bottom"><div><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
-<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="auto"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
-const scene=new THREE.Scene();scene.background=new THREE.Color('#03020a');
-const camera=new THREE.OrthographicCamera(-innerWidth/2,innerWidth/2,innerHeight/2,-innerHeight/2,.1,10);camera.position.z=2;
-const COUNT=1250,positions=new Float32Array(COUNT*3),sizes=new Float32Array(COUNT),seeds=new Float32Array(COUNT),phase=new Float32Array(COUNT),baseX=new Float32Array(COUNT),baseY=new Float32Array(COUNT);
-let seed=12345;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
-function setBasePositions(){for(let i=0;i<COUNT;i++){let angle=rand()*Math.PI*2;let rad=Math.sqrt(rand());baseX[i]=Math.cos(angle)*rad; baseY[i]=Math.sin(angle)*rad;positions[i*3]=baseX[i]*innerWidth*.39;positions[i*3+1]=baseY[i]*innerHeight*.38;positions[i*3+2]=0;sizes[i]=.9+rand()*2.2;seeds[i]=rand();phase[i]=rand()*Math.PI*2}}
-setBasePositions();
-const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));geometry.setAttribute('aSeed',new THREE.BufferAttribute(seeds,1));geometry.setAttribute('aPhase',new THREE.BufferAttribute(phase,1));
-const uniforms={uTime:{value:0},uBass:{value:0},uMid:{value:0},uHigh:{value:0},uEnergy:{value:0},uSize:{value:1},uTextMode:{value:1},uMotion:{value:0}};
-const pointsMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms,vertexShader:`
-attribute float aSize;attribute float aSeed;attribute float aPhase;
-uniform float uTime,uBass,uMid,uHigh,uEnergy,uSize,uTextMode,uMotion;
-varying float vAlpha;varying float vSeed;
-void main(){
- vec3 p=position;float t=uTime;
- float amp=uMotion;
- // Smooth multi-scale orbital drift; audio energy continuously scales motion, no abrupt jumps.
- float speed=.18+aSeed*.32+uMid*.25;
- p.x+=sin(t*speed+aPhase)*(.8+amp*10.0)+sin(t*.21+aPhase*1.7)*amp*3.0;
- p.y+=cos(t*(speed*.83)+aPhase*1.31)*(.7+amp*8.0)+sin(t*.17+aPhase)*amp*2.4;
- // Low frequencies make the field breathe; transients give a short but smooth lift.
- float beat=uBass*5.0+uEnergy*2.5;
- p.xy*=1.0+sin(t*.7+aPhase)*.003+beat*.001;
- vec4 mvPosition=modelViewMatrix*vec4(p,1.0);gl_Position=projectionMatrix*mvPosition;
- gl_PointSize=clamp(aSize*uSize*(1.0+uHigh*.85+uBass*.25),1.0,5.5);
- vAlpha=(.48+aSeed*.48)*(0.75+uEnergy*.45);
- vSeed=aSeed;
-}`,fragmentShader:`
-precision highp float;uniform float uHigh,uEnergy;varying float vAlpha;varying float vSeed;
-void main(){vec2 q=gl_PointCoord-.5;float r=length(q);if(r>.5)discard;float core=1.0-smoothstep(.18,.31,r);float rim=1.0-smoothstep(.31,.49,r);vec3 violet=vec3(.52,.30,.91),silver=vec3(.94,.90,1.);vec3 c=mix(violet,silver,smoothstep(.12,.88,vSeed));float a=(core*.95+rim*.18)*vAlpha;gl_FragColor=vec4(c,a);}`,vertexColors:false});
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#03020a');const camera=new THREE.OrthographicCamera(-innerWidth/2,innerWidth/2,innerHeight/2,-innerHeight/2,.1,10);camera.position.z=2;
+const COUNT=1450,positions=new Float32Array(COUNT*3),sizes=new Float32Array(COUNT),seeds=new Float32Array(COUNT),phases=new Float32Array(COUNT),speedA=new Float32Array(COUNT),speedB=new Float32Array(COUNT),ampA=new Float32Array(COUNT),ampB=new Float32Array(COUNT),driftX=new Float32Array(COUNT),driftY=new Float32Array(COUNT),freqBias=new Float32Array(COUNT),response=new Float32Array(COUNT),baseX=new Float32Array(COUNT),baseY=new Float32Array(COUNT);
+let seed=90421;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
+function seedParticles(){for(let i=0;i<COUNT;i++){baseX[i]=(rand()*2-1);baseY[i]=(rand()*2-1);positions[i*3]=baseX[i]*innerWidth*.34;positions[i*3+1]=baseY[i]*innerHeight*.31;positions[i*3+2]=0;sizes[i]=.9+rand()*2.2;seeds[i]=rand();phases[i]=rand()*Math.PI*2;speedA[i]=.12+rand()*.7;speedB[i]=.1+rand()*.9;ampA[i]=8+rand()*34;ampB[i]=7+rand()*38;driftX[i]=(rand()*2-1)*.5;driftY[i]=(rand()*2-1)*.5;freqBias[i]=rand();response[i]=.3+rand()*.9}}
+seedParticles();
+const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));geometry.setAttribute('aSeed',new THREE.BufferAttribute(seeds,1));
+const uniforms={uTime:{value:0},uBass:{value:0},uMid:{value:0},uHigh:{value:0},uEnergy:{value:0},uSize:{value:1}};
+const pointsMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms,vertexShader:`attribute float aSize;attribute float aSeed;uniform float uTime,uBass,uMid,uHigh,uEnergy,uSize;varying float vAlpha;varying float vSeed;void main(){vec3 p=position;float t=uTime;vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp(aSize*uSize*(1.+uHigh*.9+uBass*.3),1.,5.5);vAlpha=(.48+aSeed*.48)*(.72+uEnergy*.55);vSeed=aSeed;}`,fragmentShader:`precision highp float;uniform float uHigh,uEnergy;varying float vAlpha;varying float vSeed;void main(){vec2 q=gl_PointCoord-.5;float r=length(q);if(r>.5)discard;float core=1.-smoothstep(.18,.31,r);float rim=1.-smoothstep(.31,.49,r);vec3 c=mix(vec3(.52,.30,.91),vec3(.94,.90,1.),smoothstep(.12,.88,vSeed));gl_FragColor=vec4(c,(core*.95+rim*.18)*vAlpha);}`});
 const points=new THREE.Points(geometry,pointsMaterial);scene.add(points);
 let ac,analyser,freq,src,started=false,playing=false,counting=false,hasPlayed=false;
-const smooth={bass:0,mid:0,high:0,energy:0};let previousBass=0,transient=0,lastBeat=0;
+const smooth={bass:0,mid:0,high:0,energy:0},bands={bass:0,mid:0,high:0,energy:0};let previousBass=0,transient=0,lastBeat=0,dynamicEnvelope=0,slowEnvelope=0;
 function average(a,b){let sum=0;for(let i=a;i<b;i++)sum+=freq[i]||0;return sum/Math.max(1,b-a)/255}
-function updateAudio(now,dt){if(analyser&&freq&&playing){analyser.getByteFrequencyData(freq);const bass=average(1,15),mid=average(15,110),high=average(110,Math.min(360,freq.length)),energy=(bass+mid+high)/3;
- // Fast attack and slower release, reducing lag while avoiding jitter.
- const vals={bass,mid,high,energy};for(const k of Object.keys(smooth)){const target=vals[k];const attack=k==='bass'?.72:.48,release=k==='bass'?.22:.15;const coeff=target>smooth[k]?attack:release;smooth[k]+=(target-smooth[k])*coeff}
- const rise=bass-previousBass;if(rise>.018&&now-lastBeat>95){transient=Math.min(1,transient+rise*4.5);lastBeat=now}previousBass=bass;
+function updateAudio(now,dt){if(analyser&&freq&&playing){analyser.getByteFrequencyData(freq);bands.bass=average(1,15);bands.mid=average(15,110);bands.high=average(110,Math.min(360,freq.length));bands.energy=(bands.bass+bands.mid+bands.high)/3;
+ for(const k of Object.keys(smooth)){const target=bands[k];const attack=k==='bass'?.78:.5,release=k==='bass'?.19:.13;smooth[k]+=(target-smooth[k])*(target>smooth[k]?attack:release)}
+ const rise=bands.bass-previousBass;if(rise>.025&&now-lastBeat>100){transient=Math.min(1,transient+rise*5);lastBeat=now}previousBass=bands.bass;
  }else{for(const k of Object.keys(smooth))smooth[k]*=.96}
- transient*=Math.exp(-dt/230);
- const dynamic=Math.min(1.7,.16+smooth.energy*2.0+smooth.bass*1.25+transient*.8);
- uniforms.uBass.value=smooth.bass;uniforms.uMid.value=smooth.mid;uniforms.uHigh.value=smooth.high;uniforms.uEnergy.value=smooth.energy;uniforms.uMotion.value=dynamic;uniforms.uTime.value=now*.001;
+ transient*=Math.exp(-dt/280);
+ const instant=Math.min(1.5,smooth.energy*1.8+smooth.bass*1.4+transient*.8);
+ dynamicEnvelope+=(instant-dynamicEnvelope)*(instant>dynamicEnvelope?.28:.045);
+ slowEnvelope+=(smooth.energy-slowEnvelope)*(smooth.energy>slowEnvelope?.035:.012);
+ uniforms.uBass.value=smooth.bass;uniforms.uMid.value=smooth.mid;uniforms.uHigh.value=smooth.high;uniforms.uEnergy.value=smooth.energy;uniforms.uTime.value=now*.001;
 }
-let lastFrame=performance.now();
-function frame(ms){requestAnimationFrame(frame);const dt=Math.min(50,ms-lastFrame);lastFrame=ms;updateAudio(ms,dt);renderer.render(scene,camera)}requestAnimationFrame(frame);
-function resize(){renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);camera.left=-innerWidth/2;camera.right=innerWidth/2;camera.top=innerHeight/2;camera.bottom=-innerHeight/2;camera.updateProjectionMatrix();uniforms.uSize.value=Math.min(devicePixelRatio,2);for(let i=0;i<COUNT;i++){positions[i*3]=baseX[i]*innerWidth*.39;positions[i*3+1]=baseY[i]*innerHeight*.38}geometry.attributes.position.needsUpdate=true}addEventListener('resize',resize);
+function updateParticlePositions(t,dt){const dyn=dynamicEnvelope,slow=slowEnvelope;const dtScale=Math.min(2,dt/16.67);
+ for(let i=0;i<COUNT;i++){
+  const a=phases[i],s=seeds[i],responseMix=response[i];
+  // Each mote follows its own Lissajous-like snow drift, with distinct speed, direction and scale.
+  const individualT=t*speedA[i]+a;
+  const dynamicT=t*(.16+speedB[i]*.28)+a*1.7;
+  const localAmp=ampA[i]*(.35+slow*1.5)+dyn*ampB[i]*responseMix;
+  const targetX=baseX[i]*innerWidth*.34+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*.22;
+  const targetY=baseY[i]*innerHeight*.31+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.6+dyn*ampB[i]*.7)+Math.sin(dynamicT+a*.4)*ampA[i]*.45;
+  // Integrate with inertia: individual paths glide rather than snapping to a shared beat.
+  const idx=i*3;const blend=1-Math.exp(-dt*(.8+responseMix*1.8)/1000);
+  positions[idx]+=(targetX-positions[idx])*blend;positions[idx+1]+=(targetY-positions[idx+1])*blend;
+  // Gentle long-term drift across the rectangular field; wrap at the edges.
+  positions[idx]+=driftX[i]*(.15+dyn*.8)*dtScale;
+  positions[idx+1]+=driftY[i]*(.12+dyn*.9)*dtScale;
+  const halfW=innerWidth*.43,halfH=innerHeight*.41;
+  if(positions[idx]>halfW)positions[idx]=-halfW;if(positions[idx]<-halfW)positions[idx]=halfW;
+  if(positions[idx+1]>halfH)positions[idx+1]=-halfH;if(positions[idx+1]<-halfH)positions[idx+1]=halfH;
+ }
+ geometry.attributes.position.needsUpdate=true;
+}
+let lastFrame=performance.now();function frame(ms){requestAnimationFrame(frame);const dt=Math.min(40,ms-lastFrame);lastFrame=ms;updateAudio(ms,dt);updateParticlePositions(ms*.001,dt);renderer.render(scene,camera)}requestAnimationFrame(frame);
+function resize(){renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);camera.left=-innerWidth/2;camera.right=innerWidth/2;camera.top=innerHeight/2;camera.bottom=-innerHeight/2;camera.updateProjectionMatrix();uniforms.uSize.value=Math.min(devicePixelRatio,2)}addEventListener('resize',resize);
 const play=document.querySelector('#play'),state=document.querySelector('#state'),note=document.querySelector('#note'),hint=document.querySelector('#hint'),count=document.querySelector('#countdown'),seek=document.querySelector('#seek'),time=document.querySelector('#time');
-function setTextMode(on){document.body.classList.toggle('text-mode',on);uniforms.uTextMode.value=on?1:0}
+function setTextMode(on){document.body.classList.toggle('text-mode',on)}
 function fmt(s){s=Math.max(0,Math.floor(s||0));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-audio.addEventListener('loadedmetadata',()=>{seek.max=audio.duration||1;time.textContent='00:00 / '+fmt(audio.duration)});
-audio.addEventListener('timeupdate',()=>{if(!seek.matches(':active'))seek.value=audio.currentTime;time.textContent=fmt(audio.currentTime)+' / '+fmt(audio.duration)});
-audio.addEventListener('error',()=>{state.textContent='TRACK ERROR';hint.textContent='Could not load track.mp3 — check file path'});
+audio.addEventListener('loadedmetadata',()=>{seek.max=audio.duration||1;time.textContent='00:00 / '+fmt(audio.duration)});audio.addEventListener('timeupdate',()=>{if(!seek.matches(':active'))seek.value=audio.currentTime;time.textContent=fmt(audio.currentTime)+' / '+fmt(audio.duration)});audio.addEventListener('error',()=>{state.textContent='TRACK ERROR';hint.textContent='Could not load track.mp3 — check file path'});
 function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
-async function setupAudio(){if(!started){ac=new AudioContext({latencyHint:'interactive'});analyser=ac.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.35;src=ac.createMediaElementSource(audio);src.connect(analyser);analyser.connect(ac.destination);freq=new Uint8Array(analyser.frequencyBinCount);started=true}if(ac.state==='suspended')await ac.resume();if(audio.error)throw new Error('Audio file error '+audio.error.code)}
+async function setupAudio(){if(!started){ac=new AudioContext({latencyHint:'interactive'});analyser=ac.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.28;src=ac.createMediaElementSource(audio);src.connect(analyser);analyser.connect(ac.destination);freq=new Uint8Array(analyser.frequencyBinCount);started=true}if(ac.state==='suspended')await ac.resume();if(audio.error)throw new Error('Audio file error '+audio.error.code)}
 async function startFirstTime(){if(counting)return;counting=true;try{await setupAudio();note.style.opacity=1;setTextMode(true);document.querySelector('#note-title').textContent='ENTER THE DUST';hint.textContent='Take a breath';audio.volume=0;await audio.play();for(let n=3;n>=1;n--){count.textContent=n;count.classList.add('show');await sleep(760);count.classList.remove('show');await sleep(220)}count.textContent='';audio.currentTime=0;audio.volume=1;playing=true;hasPlayed=true;state.textContent='DRIFTING / 02';note.style.opacity=0;setTextMode(false);play.innerHTML='Ⅱ &nbsp; PAUSE'}catch(e){console.error(e);state.textContent='AUDIO ERROR';note.style.opacity=1;setTextMode(true);document.querySelector('#note-title').textContent='AUDIO UNAVAILABLE';hint.textContent=(e.name||'Error')+': '+(e.message||'could not start playback')}finally{counting=false}}
 play.addEventListener('click',async()=>{if(counting)return;if(playing){audio.pause();playing=false;play.innerHTML='▶ &nbsp; RESUME';state.textContent='SUSPENDED / 02';note.style.opacity=1;setTextMode(true);count.classList.remove('show');count.textContent='';document.querySelector('#note-title').textContent='DUST AT REST';hint.textContent='Paused — resume when ready';return}if(hasPlayed&&!audio.ended){try{await setupAudio();await audio.play();playing=true;state.textContent='DRIFTING / 02';note.style.opacity=0;setTextMode(false);play.innerHTML='Ⅱ &nbsp; PAUSE'}catch(e){state.textContent='AUDIO ERROR';hint.textContent=(e.name||'Error')+': '+(e.message||'could not resume')}return}if(audio.ended)audio.currentTime=0;await startFirstTime()});
 audio.addEventListener('ended',()=>{playing=false;hasPlayed=false;play.innerHTML='↺ &nbsp; REPLAY';state.textContent='RESTING / 03';note.style.opacity=1;setTextMode(true);document.querySelector('#note-title').textContent='THE DUST SETTLES';hint.textContent='Press replay when you are ready'});
 document.querySelector('#restart').addEventListener('click',()=>{if(counting)return;audio.pause();audio.currentTime=0;audio.volume=1;playing=false;hasPlayed=false;play.innerHTML='▶ &nbsp; ENTER';state.textContent='DORMANT / 01';note.style.opacity=1;setTextMode(true);count.classList.remove('show');count.textContent='';document.querySelector('#note-title').textContent='A FIELD OF DUST';hint.textContent='Press enter to begin'});
-seek.addEventListener('input',()=>{audio.currentTime=Number(seek.value)});
-document.querySelector('#fullscreen').addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}});
+seek.addEventListener('input',()=>{audio.currentTime=Number(seek.value)});document.querySelector('#fullscreen').addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}});
 </script></body></html>
