@@ -14,7 +14,7 @@
 <header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · A FIELD OF DUST</div></div><div class="pill" id="state">DORMANT / 01</div></header>
 <div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A FIELD OF DUST</div><div class="hint" id="hint">Press enter to begin</div></div>
 <footer class="bottom"><div><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
-<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="auto"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
@@ -33,15 +33,15 @@ const uniforms={uTime:{value:0},uBass:{value:0},uMid:{value:0},uHigh:{value:0},u
 const pointsMaterial=new THREE.ShaderMaterial({transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,uniforms,vertexShader:`attribute float aSize;attribute float aSeed;uniform float uTime,uBass,uMid,uHigh,uEnergy,uSize;varying float vAlpha;varying float vSeed;void main(){vec3 p=position;float t=uTime;vec4 mv=modelViewMatrix*vec4(p,1.);gl_Position=projectionMatrix*mv;gl_PointSize=clamp(aSize*uSize*(1.+uHigh*.9+uBass*.3),1.,5.5);vAlpha=(.48+aSeed*.48)*(.72+uEnergy*.55);vSeed=aSeed;}`,fragmentShader:`precision highp float;uniform float uHigh,uEnergy;varying float vAlpha;varying float vSeed;void main(){vec2 q=gl_PointCoord-.5;float r=length(q);if(r>.5)discard;float core=1.-smoothstep(.18,.31,r);float rim=1.-smoothstep(.31,.49,r);vec3 c=mix(vec3(.52,.30,.91),vec3(.94,.90,1.),smoothstep(.12,.88,vSeed));gl_FragColor=vec4(c,(core*.95+rim*.18)*vAlpha);}`});
 const points=new THREE.Points(geometry,pointsMaterial);scene.add(points);
 let ac,analyser,freq,src,started=false,playing=false,counting=false,hasPlayed=false;
-const smooth={bass:0,mid:0,high:0,energy:0},bands={bass:0,mid:0,high:0,energy:0};let previousBass=0,transient=0,lastBeat=0,dynamicEnvelope=0,slowEnvelope=0;
+const smooth={bass:0,mid:0,high:0,energy:0},bands={bass:0,mid:0,high:0,energy:0};let previousBass=0,previousEnergy=0,previousMid=0,previousHigh=0,transient=0,lastBeat=0,dynamicEnvelope=0,slowEnvelope=0,impactEnvelope=0;
 function average(a,b){let sum=0;for(let i=a;i<b;i++)sum+=freq[i]||0;return sum/Math.max(1,b-a)/255}
 function updateAudio(now,dt){if(analyser&&freq&&playing){analyser.getByteFrequencyData(freq);bands.bass=average(1,15);bands.mid=average(15,110);bands.high=average(110,Math.min(360,freq.length));bands.energy=(bands.bass+bands.mid+bands.high)/3;
  for(const k of Object.keys(smooth)){const target=bands[k];const attack=k==='bass'?.78:.5,release=k==='bass'?.19:.13;smooth[k]+=(target-smooth[k])*(target>smooth[k]?attack:release)}
- const rise=bands.bass-previousBass;if(rise>.025&&now-lastBeat>100){transient=Math.min(1,transient+rise*5);lastBeat=now}previousBass=bands.bass;
+ const bassRise=bands.bass-previousBass,energyRise=bands.energy-previousEnergy,midRise=bands.mid-previousMid,highRise=bands.high-previousHigh;const onset=Math.max(0,bassRise)*1.8+Math.max(0,energyRise)*2.5+Math.max(0,midRise)*.8+Math.max(0,highRise)*.7;if(onset>.035&&now-lastBeat>85){transient=Math.min(1.5,transient+onset*4.2);impactEnvelope=Math.min(1.6,impactEnvelope+onset*5.5);lastBeat=now}previousBass=bands.bass;previousEnergy=bands.energy;previousMid=bands.mid;previousHigh=bands.high;
  }else if(!playing){/* Hold the visual state perfectly still while paused. */}
- transient*=Math.exp(-dt/280);
- const instant=Math.min(1.5,smooth.energy*1.8+smooth.bass*1.4+transient*.8);
- dynamicEnvelope+=(instant-dynamicEnvelope)*(instant>dynamicEnvelope?.28:.045);
+ transient*=Math.exp(-dt/240);impactEnvelope*=Math.exp(-dt/420);
+ const instant=Math.min(1.8,smooth.energy*2.3+smooth.bass*1.6+smooth.mid*.55+smooth.high*.35+transient*1.15+impactEnvelope*.65);
+ dynamicEnvelope+=(instant-dynamicEnvelope)*(instant>dynamicEnvelope?.48:.032);
  slowEnvelope+=(smooth.energy-slowEnvelope)*(smooth.energy>slowEnvelope?.035:.012);
  uniforms.uBass.value=smooth.bass;uniforms.uMid.value=smooth.mid;uniforms.uHigh.value=smooth.high;uniforms.uEnergy.value=smooth.energy;uniforms.uTime.value=now*.001;
 }
@@ -50,15 +50,15 @@ function updateParticlePositions(t,dt){if(!playing)return;const dyn=dynamicEnvel
  const cycle=(t%30)/30;
  const ringWeight=Math.max(0,1-Math.abs(cycle-.30)/.19);
  const waveWeight=Math.max(0,1-Math.abs(cycle-.72)/.20);
- const shapeWeight=Math.max(ringWeight,waveWeight)*(.42+slow*.34+dyn*.12);
+ const shapeWeight=Math.max(ringWeight,waveWeight)*(.38+slow*.30)*Math.max(.12,1-dyn*.78);
  for(let i=0;i<COUNT;i++){
   const a=phases[i],s=seeds[i],responseMix=response[i];
   const individualT=t*speedA[i]+a;
   const dynamicT=t*(.16+speedB[i]*.28)+a*1.7;
-  const localAmp=ampA[i]*(.35+slow*1.5)+dyn*ampB[i]*responseMix;
+  const localAmp=ampA[i]*(.30+slow*1.25)+dyn*ampB[i]*(.75+responseMix*1.5)+impactEnvelope*ampB[i]*.8;
   // Free-flight path remains unique for every mote.
-  const freeX=baseX[i]*innerWidth*.49+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*.22;
-  const freeY=baseY[i]*innerHeight*.48+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.6+dyn*ampB[i]*.7)+Math.sin(dynamicT+a*.4)*ampA[i]*.45;
+  const freeX=baseX[i]*innerWidth*.49+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*(.22+dyn*.65+impactEnvelope*.35);
+  const freeY=baseY[i]*innerHeight*.48+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.6+dyn*ampB[i]*(.9+responseMix)+impactEnvelope*ampB[i]*.6)+Math.sin(dynamicT+a*.4)*ampA[i]*.45;
   // Stable but individually offset assignments let the particles suggest a circle or wave without becoming rigid.
   const angle=(i/COUNT)*Math.PI*2+a*.11;
   const radius=Math.min(innerWidth,innerHeight)*(.16+.10*seeds[i]);
@@ -70,10 +70,10 @@ function updateParticlePositions(t,dt){if(!playing)return;const dyn=dynamicEnvel
   const shapeY=ringWeight>=waveWeight?ringY:waveY;
   const targetX=freeX*(1-shapeWeight)+shapeX*shapeWeight;
   const targetY=freeY*(1-shapeWeight)+shapeY*shapeWeight;
-  const idx=i*3;const blend=1-Math.exp(-dt*(.8+responseMix*1.8+shapeWeight*.7)/1000);
+  const idx=i*3;const blend=1-Math.exp(-dt*(.8+responseMix*1.8+shapeWeight*.7+dyn*(1.8+responseMix*2.2)+impactEnvelope*2.4)/1000);
   positions[idx]+=(targetX-positions[idx])*blend;positions[idx+1]+=(targetY-positions[idx+1])*blend;
-  positions[idx]+=driftX[i]*(.15+dyn*.8)*dtScale;
-  positions[idx+1]+=driftY[i]*(.12+dyn*.9)*dtScale;
+  positions[idx]+=driftX[i]*(.15+dyn*1.7+impactEnvelope*1.2)*dtScale;
+  positions[idx+1]+=driftY[i]*(.12+dyn*1.8+impactEnvelope*1.3)*dtScale;
   const halfW=innerWidth*.51,halfH=innerHeight*.51;
   if(positions[idx]>halfW)positions[idx]=-halfW;if(positions[idx]<-halfW)positions[idx]=halfW;
   if(positions[idx+1]>halfH)positions[idx+1]=-halfH;if(positions[idx+1]<-halfH)positions[idx+1]=halfH;
