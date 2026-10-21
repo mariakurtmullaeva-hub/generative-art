@@ -14,15 +14,19 @@
 <header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · A FIELD OF DUST</div></div><div class="pill" id="state">DORMANT / 01</div></header>
 <div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A FIELD OF DUST</div><div class="hint" id="hint">Press enter to begin</div></div>
 <footer class="bottom"><div><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
-<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="auto"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
 const scene=new THREE.Scene();scene.background=new THREE.Color('#03020a');const camera=new THREE.OrthographicCamera(-innerWidth/2,innerWidth/2,innerHeight/2,-innerHeight/2,.1,10);camera.position.z=2;
-const COUNT=1450,positions=new Float32Array(COUNT*3),sizes=new Float32Array(COUNT),seeds=new Float32Array(COUNT),phases=new Float32Array(COUNT),speedA=new Float32Array(COUNT),speedB=new Float32Array(COUNT),ampA=new Float32Array(COUNT),ampB=new Float32Array(COUNT),driftX=new Float32Array(COUNT),driftY=new Float32Array(COUNT),freqBias=new Float32Array(COUNT),response=new Float32Array(COUNT),baseX=new Float32Array(COUNT),baseY=new Float32Array(COUNT);
+const COUNT=620,positions=new Float32Array(COUNT*3),sizes=new Float32Array(COUNT),seeds=new Float32Array(COUNT),phases=new Float32Array(COUNT),speedA=new Float32Array(COUNT),speedB=new Float32Array(COUNT),ampA=new Float32Array(COUNT),ampB=new Float32Array(COUNT),driftX=new Float32Array(COUNT),driftY=new Float32Array(COUNT),freqBias=new Float32Array(COUNT),response=new Float32Array(COUNT),baseX=new Float32Array(COUNT),baseY=new Float32Array(COUNT);
 let seed=90421;function rand(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296}
-function seedParticles(){for(let i=0;i<COUNT;i++){baseX[i]=(rand()*2-1);baseY[i]=(rand()*2-1);positions[i*3]=baseX[i]*innerWidth*.34;positions[i*3+1]=baseY[i]*innerHeight*.31;positions[i*3+2]=0;sizes[i]=.9+rand()*2.2;seeds[i]=rand();phases[i]=rand()*Math.PI*2;speedA[i]=.12+rand()*.7;speedB[i]=.1+rand()*.9;ampA[i]=8+rand()*34;ampB[i]=7+rand()*38;driftX[i]=(rand()*2-1)*.5;driftY[i]=(rand()*2-1)*.5;freqBias[i]=rand();response[i]=.3+rand()*.9}}
+function seedParticles(){for(let i=0;i<COUNT;i++){// Dense center field, with a deliberately sparse population near the screen edges.
+const rx=(rand()*2-1),ry=(rand()*2-1);
+baseX[i]=Math.sign(rx)*Math.pow(Math.abs(rx),1.45);
+baseY[i]=Math.sign(ry)*Math.pow(Math.abs(ry),1.45);
+positions[i*3]=baseX[i]*innerWidth*.49;positions[i*3+1]=baseY[i]*innerHeight*.48;positions[i*3+2]=0;sizes[i]=.9+rand()*2.2;seeds[i]=rand();phases[i]=rand()*Math.PI*2;speedA[i]=.12+rand()*.7;speedB[i]=.1+rand()*.9;ampA[i]=8+rand()*34;ampB[i]=7+rand()*38;driftX[i]=(rand()*2-1)*.5;driftY[i]=(rand()*2-1)*.5;freqBias[i]=rand();response[i]=.3+rand()*.9}}
 seedParticles();
 const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.BufferAttribute(positions,3));geometry.setAttribute('aSize',new THREE.BufferAttribute(sizes,1));geometry.setAttribute('aSeed',new THREE.BufferAttribute(seeds,1));
 const uniforms={uTime:{value:0},uBass:{value:0},uMid:{value:0},uHigh:{value:0},uEnergy:{value:0},uSize:{value:1}};
@@ -34,29 +38,43 @@ function average(a,b){let sum=0;for(let i=a;i<b;i++)sum+=freq[i]||0;return sum/M
 function updateAudio(now,dt){if(analyser&&freq&&playing){analyser.getByteFrequencyData(freq);bands.bass=average(1,15);bands.mid=average(15,110);bands.high=average(110,Math.min(360,freq.length));bands.energy=(bands.bass+bands.mid+bands.high)/3;
  for(const k of Object.keys(smooth)){const target=bands[k];const attack=k==='bass'?.78:.5,release=k==='bass'?.19:.13;smooth[k]+=(target-smooth[k])*(target>smooth[k]?attack:release)}
  const rise=bands.bass-previousBass;if(rise>.025&&now-lastBeat>100){transient=Math.min(1,transient+rise*5);lastBeat=now}previousBass=bands.bass;
- }else{for(const k of Object.keys(smooth))smooth[k]*=.96}
+ }else if(!playing){/* Hold the visual state perfectly still while paused. */}
  transient*=Math.exp(-dt/280);
  const instant=Math.min(1.5,smooth.energy*1.8+smooth.bass*1.4+transient*.8);
  dynamicEnvelope+=(instant-dynamicEnvelope)*(instant>dynamicEnvelope?.28:.045);
  slowEnvelope+=(smooth.energy-slowEnvelope)*(smooth.energy>slowEnvelope?.035:.012);
  uniforms.uBass.value=smooth.bass;uniforms.uMid.value=smooth.mid;uniforms.uHigh.value=smooth.high;uniforms.uEnergy.value=smooth.energy;uniforms.uTime.value=now*.001;
 }
-function updateParticlePositions(t,dt){const dyn=dynamicEnvelope,slow=slowEnvelope;const dtScale=Math.min(2,dt/16.67);
+function updateParticlePositions(t,dt){if(!playing)return;const dyn=dynamicEnvelope,slow=slowEnvelope;const dtScale=Math.min(2,dt/16.67);
+ // The cloud occasionally gathers into loose rings or flowing wavefronts, then dissolves back into free drift.
+ const cycle=(t%30)/30;
+ const ringWeight=Math.max(0,1-Math.abs(cycle-.30)/.19);
+ const waveWeight=Math.max(0,1-Math.abs(cycle-.72)/.20);
+ const shapeWeight=Math.max(ringWeight,waveWeight)*(.42+slow*.34+dyn*.12);
  for(let i=0;i<COUNT;i++){
   const a=phases[i],s=seeds[i],responseMix=response[i];
-  // Each mote follows its own Lissajous-like snow drift, with distinct speed, direction and scale.
   const individualT=t*speedA[i]+a;
   const dynamicT=t*(.16+speedB[i]*.28)+a*1.7;
   const localAmp=ampA[i]*(.35+slow*1.5)+dyn*ampB[i]*responseMix;
-  const targetX=baseX[i]*innerWidth*.34+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*.22;
-  const targetY=baseY[i]*innerHeight*.31+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.6+dyn*ampB[i]*.7)+Math.sin(dynamicT+a*.4)*ampA[i]*.45;
-  // Integrate with inertia: individual paths glide rather than snapping to a shared beat.
-  const idx=i*3;const blend=1-Math.exp(-dt*(.8+responseMix*1.8)/1000);
+  // Free-flight path remains unique for every mote.
+  const freeX=baseX[i]*innerWidth*.49+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*.22;
+  const freeY=baseY[i]*innerHeight*.48+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.6+dyn*ampB[i]*.7)+Math.sin(dynamicT+a*.4)*ampA[i]*.45;
+  // Stable but individually offset assignments let the particles suggest a circle or wave without becoming rigid.
+  const angle=(i/COUNT)*Math.PI*2+a*.11;
+  const radius=Math.min(innerWidth,innerHeight)*(.16+.10*seeds[i]);
+  const ringX=Math.cos(angle+t*.035)*radius + Math.sin(t*.38+a)*8;
+  const ringY=Math.sin(angle+t*.035)*radius*.72 + Math.cos(t*.31+a*1.7)*7;
+  const waveX=((i/COUNT)-.5)*innerWidth*.68;
+  const waveY=Math.sin(waveX*.012+t*.72+a*.22)*innerHeight*.12 + Math.sin(waveX*.024-t*.38+a)*innerHeight*.035;
+  const shapeX=ringWeight>=waveWeight?ringX:waveX;
+  const shapeY=ringWeight>=waveWeight?ringY:waveY;
+  const targetX=freeX*(1-shapeWeight)+shapeX*shapeWeight;
+  const targetY=freeY*(1-shapeWeight)+shapeY*shapeWeight;
+  const idx=i*3;const blend=1-Math.exp(-dt*(.8+responseMix*1.8+shapeWeight*.7)/1000);
   positions[idx]+=(targetX-positions[idx])*blend;positions[idx+1]+=(targetY-positions[idx+1])*blend;
-  // Gentle long-term drift across the rectangular field; wrap at the edges.
   positions[idx]+=driftX[i]*(.15+dyn*.8)*dtScale;
   positions[idx+1]+=driftY[i]*(.12+dyn*.9)*dtScale;
-  const halfW=innerWidth*.43,halfH=innerHeight*.41;
+  const halfW=innerWidth*.51,halfH=innerHeight*.51;
   if(positions[idx]>halfW)positions[idx]=-halfW;if(positions[idx]<-halfW)positions[idx]=halfW;
   if(positions[idx+1]>halfH)positions[idx+1]=-halfH;if(positions[idx+1]<-halfH)positions[idx+1]=halfH;
  }
