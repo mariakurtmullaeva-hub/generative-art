@@ -2,9 +2,10 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#05020b">
 <title>Liminal Bloom — Max Vue · Psychedelic Transform</title>
 <style>
-:root{color-scheme:dark;--ink:#f5efff;--muted:#b5a8c8}
+:root{color-scheme:dark;--ink:#f5efff}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03020a;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-#scene{position:fixed;inset:0;width:100%;height:100%;display:block}.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 25%,rgba(2,1,8,.2) 70%,rgba(2,1,8,.68) 100%)}
+#scene{position:fixed;inset:0;width:100%;height:100%;display:block}
+.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at center,transparent 35%,rgba(2,1,8,.25) 75%,rgba(2,1,8,.76) 100%)}
 .top{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);top:clamp(20px,4vh,40px);display:flex;align-items:flex-start;justify-content:space-between;pointer-events:none}.eyebrow{font-size:9px;letter-spacing:.28em;color:#c0a6e8}.title{font-size:clamp(20px,2.4vw,30px);font-weight:300;letter-spacing:.04em;margin-top:9px}.sub{font-size:11px;color:#a79bbd;margin-top:6px;letter-spacing:.08em}.pill{border:1px solid #ffffff28;border-radius:99px;padding:9px 12px;color:#d4cbe1;background:#ffffff08;font-size:10px;letter-spacing:.12em}
 .center-note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .45s;width:100%}.center-note .tiny{font-size:9px;letter-spacing:.28em;color:#f0e6ff;text-shadow:0 0 22px #d4aaff}.center-note .hint{font-size:11px;color:#b9a9cc;margin-top:12px;letter-spacing:.08em}
 #countdown{font-size:clamp(64px,14vw,150px);font-weight:200;letter-spacing:-.06em;color:#fff7ff;text-shadow:0 0 50px #c99aff;line-height:1;opacity:0;transform:scale(.8);transition:opacity .22s,transform .22s}#countdown.show{opacity:1;transform:scale(1)}
@@ -16,7 +17,7 @@
 <header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · MANY FLUID FORMS</div></div><div class="pill" id="state">DORMANT / 01</div></header>
 <div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A FLUID WORLD</div><div class="hint" id="hint">Press enter to begin</div></div>
 <footer class="bottom"><div><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
-<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="auto"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
@@ -25,44 +26,65 @@ renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth
 const scene=new THREE.Scene();scene.background=new THREE.Color('#03020a');const camera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
 const uniforms={uTime:{value:0},uRes:{value:new THREE.Vector2(innerWidth,innerHeight)},uBass:{value:0},uMid:{value:0},uHigh:{value:0},uEnergy:{value:0},uPlay:{value:0}};
 const material=new THREE.ShaderMaterial({uniforms,vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.0);}`,fragmentShader:`
-precision highp float;varying vec2 vUv;uniform vec2 uRes;uniform float uTime,uBass,uMid,uHigh,uEnergy,uPlay;
+precision highp float; varying vec2 vUv;
+uniform vec2 uRes;uniform float uTime,uBass,uMid,uHigh,uEnergy,uPlay;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
-float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.02+vec2(7.1,3.7);a*=.5;}return v;}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.03+vec2(17.1,9.2);a*=.5;}return v;}
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
+float sdRoundBox(vec2 p,vec2 b,float r){vec2 q=abs(p)-b+r;return length(max(q,0.))+min(max(q.x,q.y),0.)-r;}
 void main(){
- vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;float t=uTime*.16;
- // Multiple independent fluid bodies distributed across the whole frame.
- vec2 p=uv;float warpA=fbm(p*2.0+vec2(t*.2,-t*.13));
- for(int i=0;i<5;i++){float fi=float(i);p=rot(.14*sin(t*.8+fi)+.08*cos(t*.5-fi))*p;p+=.10*vec2(sin(p.y*3.4+t+fi),cos(p.x*3.1-t*.7+fi))*(.7+uMid*1.4);}
- float field=fbm(p*3.2+vec2(t*.11,-t*.08));
- float fine=fbm(p*6.0-vec2(t*.13,t*.09));
- // Smooth organic contours are built from warped distance fields, not a central ring.
- float f=field-.49 + .055*sin(p.x*3.5+t+fine*3.) + .04*cos(p.y*4.0-t*.8+field*5.);
- float band1=exp(-abs(f)*16.0);
- float band2=exp(-abs(f-.095-.025*sin(t+field*4.)-uBass*.025)*24.0);
- float band3=exp(-abs(f+.12+.035*cos(t*.8+fine*5.)-uMid*.025)*30.0);
- float ridges=pow(max(0.,sin((field*1.4+fine*.7)*19.+t*.9)),5.)*exp(-abs(f)*5.);
- float liquidLight=fbm(p*4.2+vec2(-t*.17,t*.12));
- float spec=pow(max(0.,sin((field+fine*.35)*25.-t+uHigh*.4)),12.)*band1;
- // Slow advected folds and broad soft gradients fill the entire canvas.
- vec3 col=vec3(.006,.003,.014);
- float atmosphere=fbm(uv*2.5+vec2(t*.08,-t*.06));
- col+=vec3(.075,.025,.14)*atmosphere*.52;
- col+=vec3(.16,.035,.36)*band1*(.55+liquidLight*.55+uBass*.4);
- col+=vec3(.31,.10,.64)*band2*(.40+uMid*.5);
- col+=vec3(.48,.29,.75)*band3*(.22+uHigh*.5);
- col+=vec3(.70,.56,.83)*ridges*(.10+uMid*.38);
- col+=vec3(.95,.88,1.)*spec*(.10+uHigh*.7);
- // broad flowing pigment ribbons: stretched and displaced by the fluid field
- float ribbonA=exp(-abs(sin(p.x*2.0+p.y*1.1+t*.45+field*3.0))*(5.0+fine*3.0));
- float ribbonB=exp(-abs(sin(p.y*2.4-p.x*.8-t*.32+fine*4.0))*(6.0+field*2.0));
- col+=vec3(.17,.045,.33)*ribbonA*.32;
- col+=vec3(.36,.15,.51)*ribbonB*.24;
- // audio gently changes fluid advection and specular intensity
- col*=.93+uEnergy*.38;
- float vign=1.-smoothstep(.58,1.28,length(uv));col*=vign;
- col=pow(max(col,vec3(0.)),vec3(.88));gl_FragColor=vec4(col,1.);
+ vec2 screen=(gl_FragCoord.xy-.5*uRes)/uRes.y;
+ // Compact art-directed composition: keep the fluid sculpture in the middle 60% of the viewport.
+ vec2 uv=screen/.68;
+ float t=uTime*.14;
+ // Slowly advected domain warping. Keep contour frequency high enough to read as liquid, not fog.
+ vec2 p=uv;
+ float warp0=fbm(p*2.8+vec2(t*.25,-t*.16));
+ for(int i=0;i<4;i++){float fi=float(i);p=rot(.13*sin(t+fi*.7)+.07*cos(t*.6-fi))*p;p+=.075*vec2(sin(p.y*4.4+t+fi),cos(p.x*4.1-t*.8+fi))*(.7+uMid*.8);}
+ float f1=fbm(p*3.6+vec2(t*.13,-t*.09));
+ float f2=fbm(p*7.5-vec2(t*.17,t*.12));
+ float f3=fbm(p*14.0+vec2(t*.22,-t*.19));
+ // Several overlapping organic lobes; distance-like contours produce crisp edges.
+ vec2 c1=p-vec2(-.30+.045*sin(t*.7),.08+.05*cos(t*.55));
+ vec2 c2=rot(.65*sin(t*.42))*(p-vec2(.22+.06*sin(t*.5),-.16+.04*cos(t*.7)));
+ vec2 c3=rot(-.8+.22*sin(t*.31))*(p-vec2(.02,.29+.035*sin(t*.6)));
+ float d1=length(c1/vec2(.48,.34))-1.0;
+ float d2=length(c2/vec2(.39,.27))-1.0;
+ float d3=length(c3/vec2(.27,.43))-1.0;
+ float metab=min(d1,min(d2,d3));
+ float contourWarp=(f1-.5)*.22+(f2-.5)*.09+(f3-.5)*.025;
+ float d=metab+contourWarp+(.025+.025*uBass)*sin(p.x*5.+p.y*3.+t+f2*4.);
+ float edge=1.0-smoothstep(.005,.035,abs(d));
+ float body=smoothstep(.10,-.04,d);
+ float innerRim=exp(-abs(d+.085+uBass*.018)*65.);
+ float outerRim=exp(-abs(d-.015)*95.);
+ float fineRim=exp(-abs(d+.025)*155.);
+ float flowingStripes=pow(max(0.,sin((f1*1.3+f2*.6+f3*.2)*24.+t*1.1)),8.)*body;
+ float caustic=pow(max(0.,sin((f1+f2*.5)*27.-t+f3*2.)),14.)*body;
+ float spec=pow(max(0.,sin((f1*1.1+f2*.3)*20.+t*.8)),20.)*outerRim;
+ // glossy dark-violet body with narrow lavender/pearl highlights
+ vec3 col=vec3(.004,.002,.012);
+ float inside=body*(.35+.65*f1);
+ col+=inside*vec3(.045,.008,.14);
+ col+=inside*vec3(.12,.018,.37)*f2*.8;
+ col+=vec3(.25,.035,.61)*innerRim*(.45+uBass*.45);
+ col+=vec3(.47,.19,.78)*outerRim*(.5+uHigh*.35);
+ col+=vec3(.81,.64,.96)*fineRim*(.45+uHigh*.65);
+ col+=vec3(.98,.86,1.)*spec*(.12+uHigh*.8);
+ col+=vec3(.45,.17,.66)*flowingStripes*(.08+uMid*.35);
+ col+=vec3(.94,.75,1.)*caustic*(.04+uHigh*.25);
+ // secondary fluid ribbons with firm highlights, softly displaced edges
+ float ribbon1=abs(p.y-(.22*sin(p.x*3.2+t*.4)+.10*sin(p.x*6.-t)+.08*(f1-.5)));
+ float ribbon2=abs(p.x-(-.18+.20*sin(p.y*3.+t*.35)+.06*sin(p.y*7.+t)));
+ float r1=exp(-ribbon1*38.)*smoothstep(1.5,.15,length(p));
+ float r2=exp(-ribbon2*42.)*smoothstep(1.4,.2,length(p));
+ col+=vec3(.15,.025,.34)*r1*.22+vec3(.34,.10,.53)*r2*.18;
+ col+=vec3(.74,.62,.91)*(exp(-ribbon1*100.)+exp(-ribbon2*115.))*(.05+uHigh*.18)*smoothstep(1.4,.2,length(p));
+ // Smooth background remains truly dark; no fullscreen fog layer.
+ float vign=1.-smoothstep(.75,1.55,length(screen));col*=vign;
+ col=pow(max(col,vec3(0.)),vec3(.82));
+ gl_FragColor=vec4(col,1.);
 }`});
 scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),material));
 let ac,analyser,freq,src,started=false,playing=false,counting=false,hasPlayed=false;
