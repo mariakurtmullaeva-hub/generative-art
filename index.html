@@ -14,7 +14,7 @@
 <header class="top"><div><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · A FIELD OF DUST</div></div><div class="pill" id="state">DORMANT / 01</div></header>
 <div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A FIELD OF DUST</div><div class="hint" id="hint">Press enter to begin</div></div>
 <footer class="bottom"><div><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
-<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position"><audio id="audio" src="./track.mp3" preload="auto"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
@@ -46,41 +46,38 @@ function updateAudio(now,dt){if(analyser&&freq&&playing){analyser.getByteFrequen
  uniforms.uBass.value=smooth.bass;uniforms.uMid.value=smooth.mid;uniforms.uHigh.value=smooth.high;uniforms.uEnergy.value=smooth.energy;uniforms.uTime.value=now*.001;
 }
 function updateParticlePositions(t,dt){if(!playing)return;const dyn=dynamicEnvelope,slow=slowEnvelope;const dtScale=Math.min(2,dt/16.67);
- // Shape time advances with the music: calmer sections linger in a figure; energetic passages transform it faster.
- shapeClock += (dt/1000) * (0.55 + smooth.bass*1.3 + smooth.energy*1.1 + Math.min(1,impactEnvelope)*1.8);
- const cycle=(shapeClock%15)/15;
- const ringWeight=Math.max(0,1-Math.abs(cycle-.27)/.22);
- const waveWeight=Math.max(0,1-Math.abs(cycle-.72)/.24);
- const chosenShape=Math.max(ringWeight,waveWeight);
- // Always retain a readable, softly formed figure; musical impacts temporarily loosen it rather than erase it.
- const shapeWeight=Math.min(.88, (.43 + chosenShape*.42 + Math.max(0,.35-slow)*.18) * (1-Math.min(.72, dyn*.28+impactEnvelope*.24)));
+ // Keep the morph clock steady: audio changes the motion, not the timing of the shape transition.
+ shapeClock += dt/1000 * 0.22;
+ const cycle=(shapeClock%24)/24;
+ // Smoothly morph between a ring and a wave over several seconds; no abrupt shape switching.
+ const waveMix=0.5-0.5*Math.cos(cycle*Math.PI*2);
+ const shapeWeight=Math.max(.48,Math.min(.88,.76-dyn*.12-impactEnvelope*.08));
+ const energyMotion=Math.min(1.6, smooth.bass*1.25+smooth.mid*.55+smooth.high*.35+transient*.35);
  for(let i=0;i<COUNT;i++){
   const a=phases[i],s=seeds[i],responseMix=response[i];
   const individualT=t*speedA[i]+a;
-  const dynamicT=t*(.16+speedB[i]*.28)+a*1.7;
-  const localAmp=ampA[i]*(.18+slow*.72)+dyn*ampB[i]*(1.15+responseMix*2.0)+impactEnvelope*ampB[i]*1.25;
-  const freeX=baseX[i]*innerWidth*.49+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*(.20+dyn*.95+impactEnvelope*.65);
-  const freeY=baseY[i]*innerHeight*.48+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.45+dyn*ampB[i]*(1.25+responseMix)+impactEnvelope*ampB[i]) +Math.sin(dynamicT+a*.4)*ampA[i]*.38;
-  const angle=(i/COUNT)*Math.PI*2 + a*.035;
-  const ringRadius=Math.min(innerWidth,innerHeight)*(.19+.105*seeds[i]);
-  const pulse=1 + dyn*.20 + impactEnvelope*.32;
-  const ringX=Math.cos(angle+shapeClock*.10)*ringRadius*pulse + Math.sin(shapeClock*.5+a)*5;
-  const ringY=Math.sin(angle+shapeClock*.10)*ringRadius*.78*pulse + Math.cos(shapeClock*.43+a*1.7)*5;
-  const waveX=((i/(COUNT-1))-.5)*innerWidth*.78;
-  const waveY=Math.sin(waveX*.010+shapeClock*.75+a*.05)*innerHeight*.115 + Math.sin(waveX*.021-shapeClock*.46+a*.12)*innerHeight*.035;
-  const isRing=ringWeight>=waveWeight;
-  const shapeX=isRing?ringX:waveX;
-  const shapeY=isRing?ringY:waveY;
+  const dynamicT=t*(.12+speedB[i]*.22)+a*1.7;
+  const localAmp=ampA[i]*(.10+slow*.45)+energyMotion*ampB[i]*(.7+responseMix*1.3)+impactEnvelope*ampB[i]*.55;
+  const freeX=baseX[i]*innerWidth*.49+Math.sin(individualT)*localAmp+Math.sin(dynamicT*.63+a)*ampB[i]*(.12+energyMotion*.45);
+  const freeY=baseY[i]*innerHeight*.48+Math.cos(t*speedB[i]+a*1.31)*(ampA[i]*.3+energyMotion*ampB[i]*(.65+responseMix)) +Math.sin(dynamicT+a*.4)*ampA[i]*.24;
+  const angle=(i/COUNT)*Math.PI*2 + a*.018;
+  const ringRadius=Math.min(innerWidth,innerHeight)*(.16+.12*seeds[i]);
+  const pulse=1 + smooth.bass*.10 + impactEnvelope*.12;
+  const ringX=Math.cos(angle+shapeClock*.055)*ringRadius*pulse;
+  const ringY=Math.sin(angle+shapeClock*.055)*ringRadius*.78*pulse;
+  const waveX=((i/(COUNT-1))-.5)*innerWidth*.82;
+  const waveY=Math.sin(waveX*.010+shapeClock*.34+a*.025)*innerHeight*.12 + Math.sin(waveX*.019-shapeClock*.21+a*.06)*innerHeight*.035;
+  const shapeX=ringX*(1-waveMix)+waveX*waveMix;
+  const shapeY=ringY*(1-waveMix)+waveY*waveMix;
   const targetX=freeX*(1-shapeWeight)+shapeX*shapeWeight;
   const targetY=freeY*(1-shapeWeight)+shapeY*shapeWeight;
   const idx=i*3;
-  const blend=1-Math.exp(-dt*(.65+responseMix*.65+shapeWeight*.9+dyn*(2.8+responseMix*3.0)+impactEnvelope*4.0)/1000);
+  const blend=1-Math.exp(-dt*(.48+responseMix*.35+shapeWeight*.35+energyMotion*.65+impactEnvelope*.8)/1000);
   positions[idx]+=(targetX-positions[idx])*blend;
   positions[idx+1]+=(targetY-positions[idx+1])*blend;
-  // A detected musical accent creates a brief, visible outward kick.
-  const kick=(impactEnvelope* (0.8+responseMix*1.6));
-  positions[idx]+=Math.cos(a+angle)*kick*dtScale;
-  positions[idx+1]+=Math.sin(a+angle)*kick*dtScale;
+  const kick=impactEnvelope*(.10+responseMix*.18)*dtScale;
+  positions[idx]+=Math.cos(a+angle)*kick;
+  positions[idx+1]+=Math.sin(a+angle)*kick;
   const halfW=innerWidth*.51,halfH=innerHeight*.51;
   if(positions[idx]>halfW)positions[idx]=-halfW;if(positions[idx]<-halfW)positions[idx]=halfW;
   if(positions[idx+1]>halfH)positions[idx+1]=-halfH;if(positions[idx+1]<-halfH)positions[idx+1]=halfH;
