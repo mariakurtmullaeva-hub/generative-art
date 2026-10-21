@@ -127,7 +127,19 @@ play.addEventListener('click',async()=>{
   if(ac.state==='suspended')await ac.resume();
   if(audio.paused){await audio.play();play.innerHTML='Ⅱ &nbsp; PAUSE';state.textContent='AWAKENING / 02';note.style.opacity=0;uniforms.uPlay.value=1}
   else{audio.pause();play.innerHTML='▶ &nbsp; RESUME';state.textContent='SUSPENDED / 02';note.style.opacity=1;note.querySelector('.hint').textContent='Paused in the liminal space'}
- }catch(e){state.textContent='AUDIO UNAVAILABLE';note.style.opacity=1;note.querySelector('.hint').textContent='Reload the page and press play'}
+} catch(e) {
+  console.error('Audio startup failed:', e, audio.error);
+  state.textContent = 'AUDIO ERROR';
+  note.style.opacity = 1;
+
+  const mediaError = audio.error
+    ? ' Media error code: ' + audio.error.code
+    : '';
+
+  note.querySelector('.hint').textContent =
+    (e.name || 'Error') + ': ' +
+    (e.message || 'unknown') + mediaError;
+}
 });
 document.querySelector('#restart').addEventListener('click',()=>{audio.currentTime=0;if(!audio.paused)audio.play();play.innerHTML='Ⅱ &nbsp; PAUSE';state.textContent='REBLOOMING / 02';note.style.opacity=0;uniforms.uPlay.value=1});
 seek.addEventListener('input',()=>{audio.currentTime=Number(seek.value)});
