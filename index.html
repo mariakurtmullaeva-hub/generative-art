@@ -1,149 +1,129 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#03030a">
-<title>Liminal Bloom — an audio-reactive world</title>
+<title>Liminal Bloom — Max Vue · Psychedelic Transform</title>
 <style>
 :root{color-scheme:dark;--ink:#eeeafa;--muted:#aaa5c1}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#03030a;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 #scene{position:fixed;inset:0;width:100%;height:100%;display:block}
-.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 47%,transparent 20%,rgba(3,3,10,.15) 57%,rgba(3,3,10,.82) 100%)}
+.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,transparent 18%,rgba(3,3,10,.18) 58%,rgba(3,3,10,.85) 100%)}
 .top{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);top:clamp(20px,4vh,40px);display:flex;align-items:flex-start;justify-content:space-between;gap:20px;pointer-events:none}
 .brand{pointer-events:auto}.eyebrow{font-size:9px;letter-spacing:.28em;color:#a7a0c9}.title{font-size:clamp(20px,2.4vw,30px);font-weight:300;letter-spacing:.04em;margin-top:9px}.sub{font-size:11px;color:#8f8aa9;margin-top:6px;letter-spacing:.08em}
 .pill{border:1px solid #ffffff28;border-radius:99px;padding:9px 12px;color:#c9c4dd;background:#ffffff08;font-size:10px;letter-spacing:.12em}
-.center-note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .5s}
+.center-note{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;transition:opacity .45s;width:100%}
 .center-note .tiny{font-size:9px;letter-spacing:.28em;color:#d6d0ee;text-shadow:0 0 22px #aaa2ff}
 .center-note .hint{font-size:11px;color:#a39dbb;margin-top:12px;letter-spacing:.08em}
+#countdown{font-size:clamp(64px,14vw,150px);font-weight:200;letter-spacing:-.06em;color:#f1edff;text-shadow:0 0 50px #a5a4ff;line-height:1;opacity:0;transform:scale(.8);transition:opacity .22s,transform .22s}
+#countdown.show{opacity:1;transform:scale(1)}
 .bottom{position:fixed;left:clamp(20px,4vw,54px);right:clamp(20px,4vw,54px);bottom:clamp(20px,4vh,38px);display:grid;grid-template-columns:1fr auto;gap:16px;align-items:end}
 .track-meta{min-width:0}.track-name{font-size:12px;letter-spacing:.08em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.track-sub{font-size:10px;color:#8f8aa9;margin-top:5px;letter-spacing:.1em}
 .controls{display:flex;align-items:center;gap:9px}.btn{appearance:none;border:1px solid #ffffff30;background:#ffffff0b;color:#f0ecff;border-radius:99px;padding:12px 16px;font:inherit;font-size:11px;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(14px);transition:background .2s,border-color .2s}.btn:hover{background:#ffffff18;border-color:#ffffff65}.btn.primary{background:#e9e4fa;color:#171321;border-color:#e9e4fa}.btn:disabled{opacity:.4;cursor:default}
 #seek{position:fixed;bottom:0;left:0;width:100%;height:2px;appearance:none;background:#ffffff18;outline:none;cursor:pointer}#seek::-webkit-slider-thumb{appearance:none;width:5px;height:5px;border-radius:50%;background:#e7ddff}
-#file{display:none}.footnote{position:fixed;right:clamp(20px,4vw,54px);top:50%;transform:translateY(80px);font-size:8px;letter-spacing:.18em;color:#78738f;writing-mode:vertical-rl}
-@media(max-width:600px){.bottom{grid-template-columns:1fr;gap:12px}.controls{justify-content:flex-start}.btn{padding:11px 13px}.footnote{display:none}.pill{font-size:8px}.center-note{top:47%}}
+@media(max-width:600px){.bottom{grid-template-columns:1fr;gap:12px}.controls{justify-content:flex-start}.btn{padding:11px 13px}.pill{font-size:8px}}
 </style>
 </head>
 <body>
 <canvas id="scene"></canvas><div class="vignette"></div>
-<header class="top">
-  <div class="brand"><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · ONE LIVING FORM</div></div>
-  <div class="pill" id="state">DORMANT / 01</div>
-</header>
-<div class="center-note" id="note"><div class="tiny">A LIVING ORGANISM</div><div class="hint">Press play to enter</div></div>
-<div class="footnote">GENERATIVE STUDY — 001</div>
-<footer class="bottom">
-  <div class="track-meta"><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 03:25</div></div>
-  <div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div>
-</footer>
-<input id="seek" type="range" min="0" max="205" value="0" step=".1" aria-label="Track position">
-<audio id="audio" src="./track.mp3" preload="metadata" crossorigin="anonymous"></audio>
+<header class="top"><div class="brand"><div class="eyebrow">AN AUDIO-REACTIVE WORLD</div><div class="title">Liminal Bloom</div><div class="sub">ONE TRACK · ONE LIVING FORM</div></div><div class="pill" id="state">DORMANT / 01</div></header>
+<div class="center-note" id="note"><div id="countdown">3</div><div class="tiny" id="note-title">A LIVING ORGANISM</div><div class="hint" id="hint">Press enter to begin</div></div>
+<footer class="bottom"><div class="track-meta"><div class="track-name">Max Vue — Psychedelic Transform</div><div class="track-sub" id="time">00:00 / 00:00</div></div><div class="controls"><button class="btn" id="fullscreen" aria-label="Fullscreen">⛶</button><button class="btn" id="restart">↺</button><button class="btn primary" id="play">▶ &nbsp; ENTER</button></div></footer>
+<input id="seek" type="range" min="0" max="1" value="0" step=".1" aria-label="Track position">
+<audio id="audio" src="./track.mp3" preload="auto"></audio>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
 const canvas=document.querySelector('#scene'),audio=document.querySelector('#audio');
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);
 const scene=new THREE.Scene();scene.background=new THREE.Color('#03030a');
 const camera=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
 const uniforms={uTime:{value:0},uRes:{value:new THREE.Vector2(innerWidth,innerHeight)},uBass:{value:0},uMid:{value:0},uHigh:{value:0},uEnergy:{value:0},uPlay:{value:0}};
-const material=new THREE.ShaderMaterial({uniforms,vertexShader:`varying vec2 vUv; void main(){vUv=uv;gl_Position=vec4(position,1.0);}`,fragmentShader:`
-precision highp float;
-varying vec2 vUv;
+const material=new THREE.ShaderMaterial({uniforms,vertexShader:`varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position,1.0);}`,fragmentShader:`
+precision highp float; varying vec2 vUv;
 uniform vec2 uRes;uniform float uTime,uBass,uMid,uHigh,uEnergy,uPlay;
 #define PI 3.14159265359
-float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453123);}
 float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<4;i++){v+=a*noise(p);p=p*2.03+vec2(7.1,3.7);a*=.5;}return v;}
 mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
 void main(){
- vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;
- float t=uTime*.22;
- vec2 p=uv;
- float r=length(p),a=atan(p.y,p.x);
- // slow-moving liquid field
- vec2 q=p;
- for(int i=0;i<5;i++){
-   float fi=float(i);
-   q=rot(.22*sin(t+fi*.8)+.12*cos(t*.7-fi))*q;
-   q+=.13*vec2(sin(q.y*3.4+t+fi),cos(q.x*3.1-t*.8+fi))*(.7+uMid*1.8);
- }
- float n=noise(q*5.0+t*.15);
- float warp=sin(a*5.+t*1.3+sin(r*8.-t))* (.025+uMid*.07);
- float shellR=.29+uBass*.16+warp+.035*sin(a*9.-t*1.2)+.018*cos(a*15.+t);
- float membrane=abs(r-shellR);
- float inner=abs(r-(.18+.025*sin(a*7.+t*1.4)+uBass*.07));
+ vec2 uv=(gl_FragCoord.xy-.5*uRes)/uRes.y;float t=uTime*.19;
+ float r=length(uv),ang=atan(uv.y,uv.x);
+ // advected, layered fluid field
+ vec2 p=uv*1.5;
+ float n=fbm(p*2.2+vec2(t*.3,-t*.18));
+ for(int i=0;i<5;i++){float fi=float(i);p=rot(.18*sin(t+fi*.7)+.1*cos(t*.65-fi))*p;p+=.105*vec2(sin(p.y*3.2+t+fi),cos(p.x*3.4-t*.8+fi))*(.8+uMid*1.5);}
+ float flow=fbm(p*3.0+vec2(t*.2,-t*.15));
+ float warp=(flow-.5)*(.10+uMid*.08)+sin(ang*4.+t+sin(r*7.-t))*(.018+uBass*.035);
+ float petal=sin(ang*5.+t*.8+sin(ang*2.-t)*.7);
+ float radius=.30+uBass*.10+warp+.047*petal+.018*sin(ang*11.-t*1.2);
+ float d=abs(r-radius);
+ float innerD=abs(r-(.17+.025*sin(ang*6.+t)+uBass*.035+warp*.35));
+ float membrane=exp(-d*(105.+uHigh*35.));
+ float inner=exp(-innerD*95.);
  float filaments=0.;
- for(int i=0;i<7;i++){
-  float fi=float(i);
-  float curve=.12+.045*fi+.045*sin(a*(3.+mod(fi,4.))+t*(.7+fi*.04)+fi);
-  filaments+=exp(-abs(r-curve-warp)*180.)*(.15+.2*sin(a*6.+t+fi));
+ for(int i=0;i<9;i++){float fi=float(i);float cr=.10+.037*fi+.027*sin(ang*(3.+mod(fi,4.))+t*(.7+fi*.03)+fi)+warp*.45;filaments+=exp(-abs(r-cr)*125.)*(.3+.7*flow);}
+ float veins=pow(max(0.,sin(ang*17.+flow*7.+t*1.5+sin(r*15.-t))),12.)*exp(-r*1.3);
+ float caustic=pow(max(0.,sin((flow*2.4+n)*9.-r*17.+t*1.4)),7.)*exp(-d*12.);
+ float core=exp(-r*5.2)*(.3+.35*sin(t*1.7+r*11.)+uBass*.4);
+ float halo=exp(-abs(r-(.49+warp*.5))*16.)*(.2+uBass*.5);
+ vec3 col=vec3(.004,.005,.016);
+ col+=vec3(.07,.085,.24)*exp(-r*1.6)*(.25+flow*.6);
+ col+=vec3(.17,.13,.43)*halo;
+ col+=vec3(.25,.31,.72)*membrane*(.45+uHigh*.6);
+ col+=vec3(.47,.63,1.)*filaments*(.18+uHigh*.8);
+ col+=vec3(.65,.46,.88)*veins*(.08+uMid*.5);
+ col+=vec3(.42,.66,.94)*caustic*(.07+uMid*.4);
+ col+=vec3(.38,.48,.9)*inner*(.08+uMid*.3);
+ col+=vec3(.58,.68,1.)*core;
+ // soft, circular bioluminescent motes (no square pixels)
+ for(int i=0;i<34;i++){
+  float fi=float(i);float aa=fi*2.39996+t*(.04+mod(fi,4.)*.008);
+  float rr=.13+hash(vec2(fi,4.))* .55+.025*sin(t+fi);
+  vec2 pos=vec2(cos(aa)*rr,sin(aa)*rr*.72);
+  float size=.0012+hash(vec2(fi,9.))*.0017+uHigh*.001;
+  float dotGlow=exp(-dot(uv-pos,uv-pos)/(size*size*5.));
+  col+=vec3(.48,.58,1.)*dotGlow*(.22+uHigh*.9);
  }
- float veins=pow(max(0.,sin(a*23.+n*5.+t*1.8+sin(r*18.-t))),18.);
- float rim=exp(-membrane*(180.+uHigh*90.));
- float core=exp(-r*7.)*(.2+.3*sin(t*2.+r*14.)+uBass*.5);
- float haze=exp(-r*1.4)*(.25+.4*n);
- vec3 col=vec3(.008,.009,.025);
- col+=vec3(.09,.12,.35)*haze;
- col+=vec3(.22,.20,.58)*rim*(.45+uHigh*.8);
- col+=vec3(.43,.66,1.)*filaments*(.3+uHigh*1.5);
- col+=vec3(.58,.40,.83)*veins*(.05+uMid*.4)*exp(-r*.6);
- col+=vec3(.63,.72,1.)*core;
- // delicate suspended particles
- vec2 cell=floor((uv+vec2(t*.002,0.))*vec2(110.,80.));
- float particle=step(.996,hash(cell))*smoothstep(.8,.1,r)*(.25+uHigh*2.);
- col+=vec3(.63,.70,1.)*particle;
- // outer translucent halo
- col+=vec3(.11,.09,.27)*exp(-abs(r-(.48+warp))*22.)*(.25+uBass);
- col*=1.0+.12*sin(t+noise(uv*8.)*4.);
- col*=.75+uPlay*.25;
- float vign=1.-smoothstep(.45,1.05,length(uv));
- col*=vign;
+ float vign=1.-smoothstep(.38,1.05,length(uv));col*=vign;
+ col=pow(max(col,vec3(0.)),vec3(.88));
  gl_FragColor=vec4(col,1.);
 }`});
 scene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),material));
-let ac,analyser,freq,src,started=false;
+let ac,analyser,freq,src,started=false,playing=false,counting=false;
 const smooth={bass:0,mid:0,high:0,energy:0};
 function average(a,b){let sum=0;for(let i=a;i<b;i++)sum+=freq[i]||0;return sum/Math.max(1,b-a)/255}
 function updateAudio(){
- if(analyser&&freq){
-  analyser.getByteFrequencyData(freq);
-  const raw={bass:average(1,12),mid:average(12,90),high:average(90,Math.min(300,freq.length))};
-  raw.energy=(raw.bass+raw.mid+raw.high)/3;
-  for(const k in raw)smooth[k]+=(raw[k]-smooth[k])*(k==='bass'?.24:.12);
- }
+ if(analyser&&freq&&playing){analyser.getByteFrequencyData(freq);const raw={bass:average(1,14),mid:average(14,100),high:average(100,Math.min(320,freq.length))};raw.energy=(raw.bass+raw.mid+raw.high)/3;for(const k in raw)smooth[k]+=(raw[k]-smooth[k])*(k==='bass'?.18:.10)}
  for(const k of ['bass','mid','high','energy'])uniforms['u'+k[0].toUpperCase()+k.slice(1)].value=smooth[k];
 }
-function frame(ms){requestAnimationFrame(frame);uniforms.uTime.value=ms*.001;updateAudio();renderer.render(scene,camera)}
-requestAnimationFrame(frame);
-function resize(){renderer.setPixelRatio(Math.min(devicePixelRatio,1.8));renderer.setSize(innerWidth,innerHeight);uniforms.uRes.value.set(innerWidth,innerHeight)}
-addEventListener('resize',resize);
-const play=document.querySelector('#play'),state=document.querySelector('#state'),note=document.querySelector('#note'),seek=document.querySelector('#seek'),time=document.querySelector('#time');
+function frame(ms){requestAnimationFrame(frame);uniforms.uTime.value=ms*.001;updateAudio();renderer.render(scene,camera)}requestAnimationFrame(frame);
+function resize(){renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);uniforms.uRes.value.set(innerWidth,innerHeight)}addEventListener('resize',resize);
+const play=document.querySelector('#play'),state=document.querySelector('#state'),note=document.querySelector('#note'),hint=document.querySelector('#hint'),count=document.querySelector('#countdown'),seek=document.querySelector('#seek'),time=document.querySelector('#time');
 function fmt(s){s=Math.max(0,Math.floor(s||0));return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
-audio.addEventListener('loadedmetadata',()=>{seek.max=audio.duration||205;time.textContent='00:00 / '+fmt(audio.duration)});
+audio.addEventListener('loadedmetadata',()=>{seek.max=audio.duration||1;time.textContent='00:00 / '+fmt(audio.duration)});
 audio.addEventListener('timeupdate',()=>{if(!seek.matches(':active'))seek.value=audio.currentTime;time.textContent=fmt(audio.currentTime)+' / '+fmt(audio.duration)});
-audio.addEventListener('ended',()=>{play.innerHTML='↺ &nbsp; REPLAY';state.textContent='RESTING / 03';note.style.opacity=1;note.querySelector('.hint').textContent='The bloom has returned to silence';uniforms.uPlay.value=0});
-play.addEventListener('click',async()=>{
+audio.addEventListener('error',()=>{state.textContent='TRACK ERROR';hint.textContent='Could not load track.mp3 — check file path'});
+function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
+async function startCountdown(){
+ if(counting)return;counting=true;
  try{
-  if(!started){ac=new AudioContext();analyser=ac.createAnalyser();analyser.fftSize=1024;analyser.smoothingTimeConstant=.84;src=ac.createMediaElementSource(audio);src.connect(analyser);analyser.connect(ac.destination);freq=new Uint8Array(analyser.frequencyBinCount);started=true}
+  if(!started){ac=new AudioContext();analyser=ac.createAnalyser();analyser.fftSize=2048;analyser.smoothingTimeConstant=.88;src=ac.createMediaElementSource(audio);src.connect(analyser);analyser.connect(ac.destination);freq=new Uint8Array(analyser.frequencyBinCount);started=true}
   if(ac.state==='suspended')await ac.resume();
-  if(audio.paused){await audio.play();play.innerHTML='Ⅱ &nbsp; PAUSE';state.textContent='AWAKENING / 02';note.style.opacity=0;uniforms.uPlay.value=1}
-  else{audio.pause();play.innerHTML='▶ &nbsp; RESUME';state.textContent='SUSPENDED / 02';note.style.opacity=1;note.querySelector('.hint').textContent='Paused in the liminal space'}
-} catch(e) {
-  console.error('Audio startup failed:', e, audio.error);
-  state.textContent = 'AUDIO ERROR';
-  note.style.opacity = 1;
-
-  const mediaError = audio.error
-    ? ' Media error code: ' + audio.error.code
-    : '';
-
-  note.querySelector('.hint').textContent =
-    (e.name || 'Error') + ': ' +
-    (e.message || 'unknown') + mediaError;
+  if(audio.error)throw new Error('Audio file error '+audio.error.code);
+  note.style.opacity=1;document.querySelector('#note-title').textContent='PREPARE TO ENTER';hint.textContent='Take a breath';
+  // Start silently during the user gesture so browser autoplay rules do not interrupt the countdown.
+  audio.volume=0;await audio.play();
+  for(let n=3;n>=1;n--){count.textContent=n;count.classList.add('show');await sleep(760);count.classList.remove('show');await sleep(220)}
+  count.textContent='';audio.currentTime=0;audio.volume=1;playing=true;uniforms.uPlay.value=1;state.textContent='AWAKENING / 02';note.style.opacity=0;play.innerHTML='Ⅱ &nbsp; PAUSE';
+ }catch(e){console.error('Audio startup failed',e,audio.error);state.textContent='AUDIO ERROR';note.style.opacity=1;document.querySelector('#note-title').textContent='AUDIO UNAVAILABLE';hint.textContent=(e.name||'Error')+': '+(e.message||'could not start playback')}
+ finally{counting=false}
 }
-});
-document.querySelector('#restart').addEventListener('click',()=>{audio.currentTime=0;if(!audio.paused)audio.play();play.innerHTML='Ⅱ &nbsp; PAUSE';state.textContent='REBLOOMING / 02';note.style.opacity=0;uniforms.uPlay.value=1});
+play.addEventListener('click',async()=>{if(counting)return;if(playing){audio.pause();playing=false;play.innerHTML='▶ &nbsp; RESUME';state.textContent='SUSPENDED / 02';note.style.opacity=1;document.querySelector('#note-title').textContent='A LIVING ORGANISM';hint.textContent='Paused in the liminal space';return}if(audio.ended)audio.currentTime=0;await startCountdown()});
+audio.addEventListener('ended',()=>{playing=false;play.innerHTML='↺ &nbsp; REPLAY';state.textContent='RESTING / 03';note.style.opacity=1;document.querySelector('#note-title').textContent='THE BLOOM RESTS';hint.textContent='Press replay when you are ready';uniforms.uPlay.value=0});
+document.querySelector('#restart').addEventListener('click',()=>{if(counting)return;audio.pause();audio.currentTime=0;playing=false;play.innerHTML='▶ &nbsp; ENTER';state.textContent='DORMANT / 01';note.style.opacity=1;count.classList.remove('show');count.textContent='';document.querySelector('#note-title').textContent='A LIVING ORGANISM';hint.textContent='Press enter to begin';uniforms.uPlay.value=0});
 seek.addEventListener('input',()=>{audio.currentTime=Number(seek.value)});
 document.querySelector('#fullscreen').addEventListener('click',async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){}});
 </script>
-</body>
-</html>
+</body></html>
